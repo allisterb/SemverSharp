@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,6 +24,15 @@ namespace SemverSharp
             get
             {
                 return Parse.Letter.Or(Parse.Char('-')).Token();
+            }
+        }
+
+        public static Parser<string> RangeOperator
+        {
+            get
+            {
+                return Parse.Chars("=~^<>").Once().Text().Then(o => Parse.Char('=').Once().Text().XOr(Parse.Return(string.Empty))
+                .Select(n => o));
             }
         }
 
@@ -218,6 +228,47 @@ namespace SemverSharp
                     .Select(v => v.Split('|').ToList());
             }
         }
+
+        public static Parser<Func<string, string>> SemanticVersionRange
+        {
+            get
+            {
+                return RangeOperator.Concat(SemanticVersion.Select(b => string.Join(".", b.ToArray()))).
+                    Select(r => new Func<string, string>((o) => { return r.ToString(); }));
+            }
+        }
+
+        public static Parser<ExpressionType> LessThan
+        {
+            get
+            {
+                return Parse.String("<").Token().Return(ExpressionType.LessThan);
+            }
+        }
+
+        public static Func<bool> GetCompareExpression(string op, SemanticVersion l, SemanticVersion r = null)
+        {
+            ConstantExpression left = Expression.Constant(l, typeof(SemanticVersion));
+            ConstantExpression right = Expression.Constant(r, typeof(SemanticVersion));
+            switch (op)
+            {
+                case "<":
+                    List<Expression> expressions = new List<Expression>();
+                    expressions.Add(Expression.MakeBinary(ExpressionType.LessThan, left, right));
+                    BlockExpression block = Expression.Block(expressions);
+                    return Expression.Lambda<Func<bool>>(Expression.Block(expressions)).Compile();
+
+                default:
+                    throw new ArgumentException("Unsupported operator: " + op);
+
+                
+                    
+            }
+
+
+            
+        }
+
 
         //<valid semver> ::= <version core> | <version core> "-" <pre-release> | <version core> "+" <build> | <version core> "-" <pre-release> "+" <build>
     }

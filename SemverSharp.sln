@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemverSharp.Parser", "Semve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemverSharp.Tests", "SemverSharp.Tests\SemverSharp.Tests.csproj", "{6D77ECE5-1264-4B99-81F6-F946DF78D756}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemverSharp.CommandLine", "SemverSharp.CommandLine\SemverSharp.CommandLine.csproj", "{58301F35-A80F-48B2-B1AD-4AA40C3F2A2B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{6D77ECE5-1264-4B99-81F6-F946DF78D756}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D77ECE5-1264-4B99-81F6-F946DF78D756}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D77ECE5-1264-4B99-81F6-F946DF78D756}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58301F35-A80F-48B2-B1AD-4AA40C3F2A2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58301F35-A80F-48B2-B1AD-4AA40C3F2A2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58301F35-A80F-48B2-B1AD-4AA40C3F2A2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58301F35-A80F-48B2-B1AD-4AA40C3F2A2B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
