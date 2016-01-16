@@ -229,6 +229,23 @@ namespace SemverSharp
             }
         }
 
+        public static Parser<string> SemanticVersionString
+        {
+            get
+            {
+                return SemanticVersion.Select(v => string.Join("|", v));
+            }
+        }
+
+        public static Parser<SemanticVersion> SemanticVersionModel
+        {
+            get
+            {
+                return SemanticVersion.Select(v => new SemanticVersion(v.ToList()));
+
+            }
+        }
+
         public static Parser<Func<string, string>> SemanticVersionRange
         {
             get
@@ -242,7 +259,21 @@ namespace SemverSharp
         {
             get
             {
+
                 return Parse.String("<").Token().Return(ExpressionType.LessThan);
+            }
+        }
+        
+
+        public static Parser<Expression> RangeExpression
+        {
+            get
+            {
+                return
+                    from l in SemanticVersionModel
+                    from lt in LessThan
+                    from r in SemanticVersionModel
+                    select SemverSharp.SemanticVersion.GetComparator(ExpressionType.LessThan, r, l);
             }
         }
 

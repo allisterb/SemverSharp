@@ -27,9 +27,15 @@ namespace SemverSharp.Tests
             SemanticVersion v3 = new SemanticVersion(3);
             SemanticVersion v4 = new SemanticVersion(3, 0, 2);
             SemanticVersion v5 = new SemanticVersion(0,0,9);
+            SemanticVersion v6 = new SemanticVersion(0, 7, 9);
             Assert.True(v5 < v1);
             Assert.True(v1 < v2);
             Assert.True(v5 < v3);
+            Assert.True(v5 < v6);
+            Assert.False(v1 < v5);
+            Assert.False(v2 < v1);
+            Assert.False(v3 < v2);
+
         }
     }
 }
