@@ -26,16 +26,7 @@ namespace SemverSharp
                 return Parse.Letter.Or(Parse.Char('-')).Token();
             }
         }
-
-        public static Parser<string> RangeOperator
-        {
-            get
-            {
-                return Parse.Chars("=~^<>").Once().Text().Then(o => Parse.Char('=').Once().Text().XOr(Parse.Return(string.Empty))
-                .Select(n => o));
-            }
-        }
-
+        
         public static Parser<char> PositiveDigit
         {
             get
@@ -124,7 +115,7 @@ namespace SemverSharp
         {
             get
             {
-                return IdentifierCharacter.AtLeastOnce().Text().Token();
+                return IdentifierCharacter.AtLeastOnce().Token().Text();
             }
         }
 
@@ -135,11 +126,11 @@ namespace SemverSharp
             {
                 return
                     IdentifierCharacters.Concat(NonDigit.Once()).Concat(IdentifierCharacters)
-                    .Or(IdentifierCharacters.Concat(NonDigit.Once()))                    
-                    .Or(NonDigit.Once().Concat(IdentifierCharacters))                    
+                    .Or(IdentifierCharacters.Concat(NonDigit.Once()))
+                    .Or(NonDigit.Once().Concat(IdentifierCharacters))
                     .Or(NonDigit.Once())
-                    .Text()
-                    .Token();                                                     
+                    .Token()
+                    .Text();                                                     
             }
         }
        
@@ -228,15 +219,7 @@ namespace SemverSharp
                     .Select(v => v.Split('|').ToList());
             }
         }
-
-        public static Parser<string> SemanticVersionString
-        {
-            get
-            {
-                return SemanticVersion.Select(v => string.Join("|", v));
-            }
-        }
-
+        
         public static Parser<SemanticVersion> SemanticVersionModel
         {
             get
@@ -245,35 +228,86 @@ namespace SemverSharp
 
             }
         }
-
-        public static Parser<Func<string, string>> SemanticVersionRange
-        {
-            get
-            {
-                return RangeOperator.Concat(SemanticVersion.Select(b => string.Join(".", b.ToArray()))).
-                    Select(r => new Func<string, string>((o) => { return r.ToString(); }));
-            }
-        }
-
+        
         public static Parser<ExpressionType> LessThan
         {
             get
             {
-
                 return Parse.String("<").Token().Return(ExpressionType.LessThan);
             }
         }
-        
 
-        public static Parser<Expression> RangeExpression
+        public static Parser<ExpressionType> LessThanOrEqual
+        {
+            get
+            {
+
+                return Parse.String("<=").Token().Return(ExpressionType.LessThanOrEqual);
+            }
+        }
+
+        public static Parser<ExpressionType> GreaterThan
+        {
+            get
+            {
+                return Parse.String(">").Token().Return(ExpressionType.GreaterThan);
+            }
+        }
+
+        public static Parser<ExpressionType> GreaterThanOrEqual
+        {
+            get
+            {
+
+                return Parse.String(">=").Token().Return(ExpressionType.GreaterThanOrEqual);
+            }
+        }
+
+        public static Parser<ExpressionType> Equal
+        {
+            get
+            {
+
+                return Parse.String("=").Token().Return(ExpressionType.LessThanOrEqual);
+            }
+        }
+
+        public static Parser<ExpressionType> Tilde
+        {
+            get
+            {
+
+                return Parse.String("~").Token().Return(ExpressionType.OnesComplement);
+            }
+        }
+
+        public static Parser<ExpressionType> VersionOperator
+        {
+            get
+            {
+                return LessThanOrEqual.Or(LessThan).Or(GreaterThan).Or(GreaterThanOrEqual).Or(Equal).Or(Tilde);
+            }
+        }
+
+
+        public static Parser<Tuple<ExpressionType, SemanticVersion>> Comparator
+        {
+            get
+            {
+                return VersionOperator.Then(o =>
+                    SemanticVersionModel.Select(version
+                    => new Tuple<ExpressionType, SemanticVersion>(o, version)));                                                            
+            }
+        }
+
+        public static Parser<Expression> ComparatorSet
         {
             get
             {
                 return
                     from l in SemanticVersionModel
-                    from lt in LessThan
-                    from r in SemanticVersionModel
-                    select SemverSharp.SemanticVersion.GetComparator(ExpressionType.LessThan, r, l);
+                    from r in Comparator.AtLeastOnce()
+                    select SemverSharp.SemanticVersion.GetComparator(l, r);                    
             }
         }
 
