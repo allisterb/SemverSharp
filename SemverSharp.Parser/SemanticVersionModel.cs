@@ -14,7 +14,7 @@ namespace SemverSharp
         public int? Major { get; set; } = null;
         public int? Minor { get; set; } = null;
         public int? Patch { get; set; } = null;
-        public IEnumerable<string> PreRelease { get; set; } = null;
+        public PreRelease PreRelease { get; set; } = null;
         public IEnumerable<string> Build { get; set; } = null;
 
         public SemanticVersion(int? major, int? minor = null, int? patch = null, string prerelease = "", string build = "")
@@ -28,18 +28,23 @@ namespace SemverSharp
             this.Patch = patch;
             if (!string.IsNullOrEmpty(prerelease))
             {
+                this.PreRelease = new PreRelease();
                 if (Grammar.PreRelease.Parse(prerelease).Count() > 0)
                 {
-                    this.PreRelease = Grammar.PreRelease.Parse(prerelease);
+                    IEnumerable<string> p = Grammar.PreRelease.Parse(prerelease);
+                    for (int i = 0; i < p.Count(); i++)
+                    {
+                        this.PreRelease.Add(i, p.ElementAt(i));
+                    }                    
                 }
                 else throw new ArgumentException("The prerelease identifier is not valid: " + prerelease + ".");
             }
 
             if (!string.IsNullOrEmpty(build))
             {
-                if (Grammar.PreRelease.Parse(build).Count() > 0)
+                if (Grammar.Build.Parse(build).Count() > 0)
                 {
-                    this.Build = Grammar.PreRelease.Parse(build);
+                    this.Build = Grammar.Build.Parse(build);
                 }
                 else throw new ArgumentException("The build identifier is not valid: " + build + ".");
             }
@@ -64,10 +69,15 @@ namespace SemverSharp
             if (Int32.TryParse(v[1], out minor)) this.Minor = minor;
             if (Int32.TryParse(v[2], out patch)) this.Patch = patch;
             if (!string.IsNullOrEmpty(v[3]))
-            {
+            {                
                 if (Grammar.PreRelease.Parse(v[3]).Count() > 0)
                 {
-                    this.PreRelease = Grammar.PreRelease.Parse(v[3]);
+                    this.PreRelease = new PreRelease();
+                    IEnumerable<string> p = Grammar.PreRelease.Parse(v[3]);
+                    for (int i = 0; i < p.Count(); i++)
+                    {
+                        this.PreRelease.Add(i, p.ElementAt(i));
+                    }
                 }
                 else throw new ArgumentException("The prerelease identifier is not valid: " + v[3] + ".");
             }
@@ -297,7 +307,7 @@ namespace SemverSharp
             {
                 left.Patch = 0;
 
-            }
+            }            
             ConstantExpression zero = Expression.Constant(0, typeof(int));
             ConstantExpression l = Expression.Constant(left, typeof(SemanticVersion));
             ConstantExpression r = Expression.Constant(right, typeof(SemanticVersion));
