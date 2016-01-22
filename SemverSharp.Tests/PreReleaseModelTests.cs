@@ -90,15 +90,11 @@ namespace SemverSharp.Tests
             SemanticVersion v4 = new SemanticVersion(0, 0, 0, "beta.x.0");
             PreRelease v11 = --(v1.PreRelease);
             PreRelease v21 = --(v2.PreRelease);
-            Assert.Equal(v11.Count, 2);
-            Assert.Equal(v11[1], "0");
+            Assert.Equal(v11.Count, 1);
+            Assert.Equal(v11.ToString(), "alpha");
             Assert.Equal(v21.ToString(), "alpha.1");
-            //++(v3.PreRelease);
-            //Assert.Equal(v3.PreRelease.Count, 2);
-            //Assert.Equal(v3.PreRelease[1], "1");
-            //++(v4.PreRelease);
-
-
+            Assert.Equal((--v3).ToString(), "0.0.0");
+            Assert.Equal((--v4).ToString(), "0.0.0.beta");            
         }
     }
 }

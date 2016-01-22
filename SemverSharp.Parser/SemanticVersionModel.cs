@@ -182,7 +182,7 @@ namespace SemverSharp
                 ++s.Patch;
                 return s;
             }
-            else if (!s.Minor.HasValue)
+            else if (s.Minor.HasValue)
             {
                 ++s.Minor;
                 return s;
@@ -194,7 +194,7 @@ namespace SemverSharp
             }
         }
 
-        public static SemanticVersion operator --(SemanticVersion s)
+        public static SemanticVersion operator -- (SemanticVersion s)
         {
             if (s.PreRelease != null)
             {
@@ -203,17 +203,17 @@ namespace SemverSharp
             }
             else if (s.Patch.HasValue)
             {
-                ++s.Patch;
+                --s.Patch;
                 return s;
             }
-            else if (!s.Minor.HasValue)
+            else if (s.Minor.HasValue)
             {
-                ++s.Minor;
+                --s.Minor;
                 return s;
             }
             else
             {
-                ++s.Major;
+                --s.Major;
                 return s;
             }
         }
@@ -225,6 +225,31 @@ namespace SemverSharp
             if (ReferenceEquals(this, obj))
                 return true;
             return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.Equal, (SemanticVersion)obj, this)).Compile().Invoke();
+        }
+
+        public override string ToString()
+        {
+            string result = this.Major.ToString();
+            if (this.Minor.HasValue)
+            {
+                result = result + "." + this.Minor.ToString();
+            }
+            if (this.Patch.HasValue)
+            {
+                result = result + "." + this.Patch.ToString();
+            }
+
+            if (this.PreRelease != null && this.PreRelease.Count() > 0)
+            {
+                result = result + "." + this.PreRelease.ToString();
+            }
+            if (this.Build != null)
+            {
+                result = result + "." + this.Build.ToString();
+            }
+
+            return result;
+
         }
 
         public override int GetHashCode()
