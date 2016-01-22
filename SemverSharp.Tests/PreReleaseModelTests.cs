@@ -31,9 +31,9 @@ namespace SemverSharp.Tests
         [Fact]
         public void CanCompareEqual()
         {
-            SemanticVersion v1 = new SemanticVersion(1,0,0,"alpha2");            
+            SemanticVersion v1 = new SemanticVersion(1, 0, 0, "alpha2");
             SemanticVersion v2 = new SemanticVersion(3, 5, 0, "alpha2");
-            Assert.Equal(v1.PreRelease, v2.PreRelease);            
+            Assert.Equal(v1.PreRelease, v2.PreRelease);
         }
 
         [Fact]
@@ -42,16 +42,28 @@ namespace SemverSharp.Tests
             SemanticVersion v1 = new SemanticVersion(1, 0, 0, "alpha.1");
             SemanticVersion v2 = new SemanticVersion(1, 3, 4, "alpha.2.0");
             SemanticVersion v3 = new SemanticVersion(0, 0, 0, "beta.0");
+            SemanticVersion v4 = new SemanticVersion(0, 0, 0, "beta.x.0");
             Assert.True(v1.PreRelease < v2.PreRelease);
             Assert.True(v2.PreRelease < v3.PreRelease);
+            Assert.True(v3.PreRelease < v4.PreRelease);
         }
 
         [Fact]
-        public void CanComparePrelease()
+        public void CanIncrement()
         {
-            SemanticVersion v1 = new SemanticVersion(3, 5, 0, "alpha.1");
-            SemanticVersion v2 = new SemanticVersion(3, 5, 0, "alpha.2");
-            Assert.NotNull(v1);
+            SemanticVersion v1 = new SemanticVersion(1, 0, 0, "alpha.1");
+            SemanticVersion v2 = new SemanticVersion(1, 3, 4, "alpha.2.0");
+            SemanticVersion v3 = new SemanticVersion(0, 0, 0, "beta");
+            SemanticVersion v4 = new SemanticVersion(0, 0, 0, "beta.x.0");
+            PreRelease v11 = ++(v1.PreRelease);
+            PreRelease v21 = ++(v2.PreRelease);
+            Assert.Equal(v11[1], "2");
+            Assert.Equal(v21[1], "3");
+            ++(v3.PreRelease);
+            Assert.Equal(v3.PreRelease.Count, 2);
+            Assert.Equal(v3.PreRelease[1], "1");
+            ++(v4.PreRelease);
+            Assert.Equal(v4.PreRelease[2], "1");
         }
     }
 }
