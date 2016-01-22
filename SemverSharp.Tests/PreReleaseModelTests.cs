@@ -29,6 +29,17 @@ namespace SemverSharp.Tests
         }
 
         [Fact]
+        public void CanConvertToString()
+        {
+            SemanticVersion v1 = new SemanticVersion(1, 2, 3, "alpha.bravo.1");
+            SemanticVersion v2 = new SemanticVersion(1, 2, 3, "alpha.decker.3.6.mafia");
+            SemanticVersion v3 = new SemanticVersion(1, 2, 3, "1.bravo.alpha");
+            Assert.Equal("alpha.bravo.1", v1.PreRelease.ToString());
+            Assert.NotEqual(v3.PreRelease.ToString(), v1.PreRelease.ToString());
+            Assert.NotEqual(v3.PreRelease.GetHashCode(), v1.PreRelease.GetHashCode());
+        }
+
+        [Fact]
         public void CanCompareEqual()
         {
             SemanticVersion v1 = new SemanticVersion(1, 0, 0, "alpha2");
@@ -43,9 +54,11 @@ namespace SemverSharp.Tests
             SemanticVersion v2 = new SemanticVersion(1, 3, 4, "alpha.2.0");
             SemanticVersion v3 = new SemanticVersion(0, 0, 0, "beta.0");
             SemanticVersion v4 = new SemanticVersion(0, 0, 0, "beta.x.0");
+            SemanticVersion v5 = new SemanticVersion(0, 0, 0, "beta");
             Assert.True(v1.PreRelease < v2.PreRelease);
             Assert.True(v2.PreRelease < v3.PreRelease);
             Assert.True(v3.PreRelease < v4.PreRelease);
+            Assert.True(v5.PreRelease < v4.PreRelease && v4.PreRelease > v3.PreRelease);
         }
 
         [Fact]
@@ -57,13 +70,35 @@ namespace SemverSharp.Tests
             SemanticVersion v4 = new SemanticVersion(0, 0, 0, "beta.x.0");
             PreRelease v11 = ++(v1.PreRelease);
             PreRelease v21 = ++(v2.PreRelease);
+            Assert.Equal(v11.ToString(), "alpha.2");
             Assert.Equal(v11[1], "2");
             Assert.Equal(v21[1], "3");
+            Assert.Equal(v21.ToString(), "alpha.3");
             ++(v3.PreRelease);
             Assert.Equal(v3.PreRelease.Count, 2);
             Assert.Equal(v3.PreRelease[1], "1");
             ++(v4.PreRelease);
             Assert.Equal(v4.PreRelease[2], "1");
+        }
+
+        [Fact]
+        public void CanDecrement()
+        {
+            SemanticVersion v1 = new SemanticVersion(1, 0, 0, "alpha.1");
+            SemanticVersion v2 = new SemanticVersion(1, 3, 4, "alpha.2.0");
+            SemanticVersion v3 = new SemanticVersion(0, 0, 0, "beta");
+            SemanticVersion v4 = new SemanticVersion(0, 0, 0, "beta.x.0");
+            PreRelease v11 = --(v1.PreRelease);
+            PreRelease v21 = --(v2.PreRelease);
+            Assert.Equal(v11.Count, 2);
+            Assert.Equal(v11[1], "0");
+            Assert.Equal(v21.ToString(), "alpha.1");
+            //++(v3.PreRelease);
+            //Assert.Equal(v3.PreRelease.Count, 2);
+            //Assert.Equal(v3.PreRelease[1], "1");
+            //++(v4.PreRelease);
+
+
         }
     }
 }

@@ -9,7 +9,7 @@ using SemverSharp;
 
 namespace SemverSharp.Tests
 {
-    public class ModelTests
+    public class SemanticVersionModelTests
     {
 
         [Fact]

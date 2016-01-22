@@ -19,7 +19,7 @@ namespace SemverSharp
 
         public SemanticVersion(int? major, int? minor = null, int? patch = null, string prerelease = "", string build = "")
         {
-            if (!major.HasValue) throw new ArgumentNullException("Major component cannot be null.");
+            if (!major.HasValue && minor.HasValue) throw new ArgumentNullException("Major component cannot be null if minor is non-null.");
             if (!minor.HasValue && patch.HasValue) throw new ArgumentNullException("Minor component cannot be null if patch is non-null.");
             if (!string.IsNullOrEmpty(prerelease) && !patch.HasValue) throw new ArgumentNullException("Patch component cannot be null if pre-release is non-null.");
             if (!string.IsNullOrEmpty(build) && !patch.HasValue) throw new ArgumentNullException("Patch component cannot be null if pre-release is non-null.");
@@ -159,6 +159,65 @@ namespace SemverSharp
             return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.GreaterThan, left, right)).Compile().Invoke();
         }
 
+             
+        public static bool operator <=(SemanticVersion left, SemanticVersion right)
+        {
+            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.LessThanOrEqual, right, left)).Compile().Invoke();
+        }
+
+        public static bool operator >=(SemanticVersion left, SemanticVersion right)
+        {
+            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.GreaterThanOrEqual, right, left)).Compile().Invoke();
+        }
+
+        public static SemanticVersion operator ++(SemanticVersion s)
+        {
+            if (s.PreRelease != null)
+            {
+                ++s.PreRelease;
+                return s;
+            }
+            else if (s.Patch.HasValue)
+            {
+                ++s.Patch;
+                return s;
+            }
+            else if (!s.Minor.HasValue)
+            {
+                ++s.Minor;
+                return s;
+            }
+            else
+            {
+                ++s.Major;
+                return s;
+            }
+        }
+
+        public static SemanticVersion operator --(SemanticVersion s)
+        {
+            if (s.PreRelease != null)
+            {
+                --s.PreRelease;
+                return s;
+            }
+            else if (s.Patch.HasValue)
+            {
+                ++s.Patch;
+                return s;
+            }
+            else if (!s.Minor.HasValue)
+            {
+                ++s.Minor;
+                return s;
+            }
+            else
+            {
+                ++s.Major;
+                return s;
+            }
+        }
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(obj, null))
@@ -194,34 +253,8 @@ namespace SemverSharp
                 return result;
             }
         }
-       
-        public static bool operator <=(SemanticVersion left, SemanticVersion right)
-        {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.LessThanOrEqual, right, left)).Compile().Invoke();
-        }
 
-        public static bool operator >=(SemanticVersion left, SemanticVersion right)
-        {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.GreaterThanOrEqual, right, left)).Compile().Invoke();
-        }
-
-        public static SemanticVersion operator ~ (SemanticVersion right)
-        {
-            if (!right.Minor.HasValue)
-            {
-                return new SemanticVersion(++right.Major, 0, 0);
-            }
-
-
-            else 
-            {
-                return new SemanticVersion(right.Major, ++right.Minor, 0);
-            }
-            
-        }
-
-
-        public static Expression GetComparator(ExpressionType et, SemanticVersion left, SemanticVersion right)
+        public static BinaryExpression GetComparator(ExpressionType et, SemanticVersion left, SemanticVersion right)
         {
             if (ReferenceEquals(right, null)) throw new ArgumentNullException("Right operand cannot be null.");
             if (ReferenceEquals(left, null)) throw new ArgumentNullException("Left operand cannot be null.");
@@ -249,11 +282,11 @@ namespace SemverSharp
             ConstantExpression r_prerelease = right.PreRelease != null ? Expression.Constant(right.PreRelease, typeof(PreRelease)) : null;
 
             if (et == ExpressionType.Equal || et == ExpressionType.NotEqual)
-            {                
-                Expression a = Expression.MakeBinary(et, l_major, r_major);
-                Expression b = right.Minor.HasValue ? Expression.MakeBinary(et, l_minor, r_minor) : null;
-                Expression c = right.Patch.HasValue ? Expression.MakeBinary(et, l_patch, r_patch) : null;
-                Expression d = (left.PreRelease != null && right.PreRelease != null) ? Expression.MakeBinary(et, l_prerelease, r_prerelease) : null;
+            {
+                BinaryExpression a = Expression.MakeBinary(et, l_major, r_major);
+                BinaryExpression b = right.Minor.HasValue ? Expression.MakeBinary(et, l_minor, r_minor) : null;
+                BinaryExpression c = right.Patch.HasValue ? Expression.MakeBinary(et, l_patch, r_patch) : null;
+                BinaryExpression d = (left.PreRelease != null && right.PreRelease != null) ? Expression.MakeBinary(et, l_prerelease, r_prerelease) : null;
                 if (!right.Minor.HasValue)
                 {
                     return a;
@@ -273,11 +306,11 @@ namespace SemverSharp
                 }
             }
             else if (et == ExpressionType.LessThan || et == ExpressionType.LessThanOrEqual || et == ExpressionType.GreaterThan || et == ExpressionType.GreaterThanOrEqual)
-            {             
-                Expression a = Expression.MakeBinary(et, l_major, r_major);
-                Expression b = right.Minor.HasValue ? Expression.MakeBinary(et, l_minor, r_minor) : null;
-                Expression c = right.Patch.HasValue ? Expression.MakeBinary(et, l_patch, r_patch) : null;
-                Expression d = right.PreRelease != null ? Expression.MakeBinary(et, l_prerelease, r_prerelease) : null;
+            {
+                BinaryExpression a = Expression.MakeBinary(et, l_major, r_major);
+                BinaryExpression b = right.Minor.HasValue ? Expression.MakeBinary(et, l_minor, r_minor) : null;
+                BinaryExpression c = right.Patch.HasValue ? Expression.MakeBinary(et, l_patch, r_patch) : null;
+                BinaryExpression d = right.PreRelease != null ? Expression.MakeBinary(et, l_prerelease, r_prerelease) : null;
 
                 if (!right.Minor.HasValue) //Major only
                 {
@@ -316,32 +349,39 @@ namespace SemverSharp
             else throw new ArgumentException("Unimplemented expression type: " + et.ToString() + ".");
         }
 
-        public static Expression GetComparator(string et, SemanticVersion right, SemanticVersion left = null)
+        public static BinaryExpression GetComparator(SemanticVersion left, IEnumerable<Tuple<ExpressionType, SemanticVersion>> right)
         {
-            switch(et)
+            BinaryExpression c = null;
+            foreach (Tuple<ExpressionType, SemanticVersion> r in right)
             {
-                case "<": return GetComparator(ExpressionType.LessThan, right, left);
-                case "<=": return GetComparator(ExpressionType.LessThanOrEqual, right, left);
+                if (c == null)
+                {
+                    c = GetComparator(r.Item1, left, r.Item2);
+                }
+                else
+                {
+                    c = Expression.AndAlso(c, GetComparator(r.Item1, left, r.Item2));
+                }                                                                                                                                                                        
+            }
+            return c;
+        }
+
+        public static Expression GetComparator(string et, SemanticVersion left, SemanticVersion right)
+        {
+            switch (et)
+            {
+                case "<": return GetComparator(ExpressionType.LessThan, left, right);
+                case "<=": return GetComparator(ExpressionType.LessThanOrEqual, left, right);
                 default: throw new ArgumentException("Unimplemented operator.");
 
             }
         }
 
-        public static Expression GetComparator(SemanticVersion right, IEnumerable<Tuple<ExpressionType, SemanticVersion>> left)
+
+        public static bool InvokeComparator(BinaryExpression be)
         {
-            Expression c = null;
-            foreach (Tuple<ExpressionType, SemanticVersion> l in left)
-            {
-                if (c == null)
-                {
-                    c = GetComparator(l.Item1, right, l.Item2);
-                }
-                else
-                {
-                    c = Expression.AndAlso(c, GetComparator(l.Item1, right, l.Item2));
-                }                                                                                                                                                                        
-            }
-            return c;
+            return Expression.Lambda<Func<bool>>(be).Compile().Invoke();
         }
+
     }
 }
