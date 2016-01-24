@@ -68,6 +68,7 @@ namespace SemverSharp.Tests
             SemanticVersion v2 = new SemanticVersion(1, 3, 4, "alpha.2.0");
             SemanticVersion v3 = new SemanticVersion(0, 0, 0, "beta");
             SemanticVersion v4 = new SemanticVersion(0, 0, 0, "beta.x.0");
+            SemanticVersion bx860new = new SemanticVersion(0, 0, 0, "beta.x86.0.new");
             PreRelease v11 = ++(v1.PreRelease);
             PreRelease v21 = ++(v2.PreRelease);
             Assert.Equal(v11.ToString(), "alpha.2");
@@ -79,6 +80,8 @@ namespace SemverSharp.Tests
             Assert.Equal(v3.PreRelease[1], "1");
             ++(v4.PreRelease);
             Assert.Equal(v4.PreRelease[2], "1");
+            Assert.Equal((++bx860new).PreRelease.ToString(), "beta.x86.0.new.1");
+
         }
 
         [Fact]
