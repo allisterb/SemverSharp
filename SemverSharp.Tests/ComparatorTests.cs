@@ -19,6 +19,7 @@ namespace SemverSharp.Tests
         SemanticVersion v2 = new SemanticVersion(2);
         SemanticVersion v202 = new SemanticVersion(2, 0, 2);
         SemanticVersion v202a = new SemanticVersion(2, 0, 2, "alpha");
+        SemanticVersion v310ab = new SemanticVersion(3, 1, 0, "alpha.beta");
         SemanticVersion v000a1 = new SemanticVersion(0, 0, 0, "alpha.1");
         SemanticVersion v000b1 = new SemanticVersion(0, 0, 0, "beta.1");
         SemanticVersion v000a2 = new SemanticVersion(0, 0, 0, "alpha.2");
@@ -57,9 +58,9 @@ namespace SemverSharp.Tests
             Assert.True(SemanticVersion.InvokeComparator(e2));                        
             e2 = SemanticVersion.GetComparator(ExpressionType.LessThan, v000a1, v010a1);
             Assert.True(SemanticVersion.InvokeComparator(e2)); //should not compare on prerelease            
-            e2 = SemanticVersion.GetComparator(ExpressionType.LessThan, v000a1, v010a1);
-            Assert.True(SemanticVersion.InvokeComparator(SemanticVersion.GetComparator(ExpressionType.LessThan, v202a, v202)));
+            e2 = SemanticVersion.GetComparator(ExpressionType.LessThan, v000a1, v010a1);            
             Assert.True(SemanticVersion.InvokeComparator(e2));
+            Assert.True(SemanticVersion.InvokeComparator(SemanticVersion.GetComparator(ExpressionType.LessThan, v202a, v202)));
             Assert.True(SemanticVersion.InvokeComparator(SemanticVersion.GetComparator(ExpressionType.LessThan, v090a1, v090b2)));            
             Assert.False(SemanticVersion.InvokeComparator(SemanticVersion.GetComparator(ExpressionType.LessThan, v000a1, v000a0)));
             Assert.True(SemanticVersion.InvokeComparator(SemanticVersion.GetComparator(ExpressionType.LessThan, v090b1, v090b2)));
@@ -91,6 +92,7 @@ namespace SemverSharp.Tests
             Assert.False(SemanticVersion.RangeIntersect(ExpressionType.GreaterThan, v11, ExpressionType.GreaterThan, v11));
             Assert.False(SemanticVersion.RangeIntersect(ExpressionType.LessThan, v090b1, ExpressionType.GreaterThan, v11));
             Assert.True(SemanticVersion.RangeIntersect(ExpressionType.LessThan, v010a1, ExpressionType.GreaterThan, v090a2));
+            Assert.True(SemanticVersion.RangeIntersect(ExpressionType.GreaterThan, v202a, ExpressionType.LessThan, v310ab));
         }
 
 

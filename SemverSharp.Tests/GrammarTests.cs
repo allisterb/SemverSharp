@@ -93,7 +93,7 @@ namespace SemverSharp.Tests
         [Fact]
         public void CanParseVersion()
         {
-            var v = Grammar.SemanticVersion.Parse("0.0.1+build.12");
+            var v = Grammar.SemanticVersionIdentifier.Parse("0.0.1+build.12");
             Assert.NotEmpty(v);
         }
 

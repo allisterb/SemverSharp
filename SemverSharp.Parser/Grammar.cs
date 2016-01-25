@@ -201,7 +201,7 @@ namespace SemverSharp
             }
         }
 
-        public static Parser<IEnumerable<string>> SemanticVersion
+        public static Parser<List<string>> SemanticVersionIdentifier
         {
             get
             {
@@ -220,11 +220,11 @@ namespace SemverSharp
             }
         }
         
-        public static Parser<SemanticVersion> SemanticVersionModel
+        public static Parser<SemanticVersion> SemanticVersion
         {
             get
             {
-                return SemanticVersion.Select(v => new SemanticVersion(v.ToList()));
+                return SemanticVersionIdentifier.Select(v => new SemanticVersion(v.ToList()));
 
             }
         }
@@ -295,7 +295,7 @@ namespace SemverSharp
             get
             {
                 return VersionOperator.Then(o =>
-                    SemanticVersionModel.Select(version
+                    SemanticVersion.Select(version
                     => new Tuple<ExpressionType, SemanticVersion>(o, version)));                                                            
             }
         }
@@ -305,7 +305,7 @@ namespace SemverSharp
             get
             {
                 return
-                    from l in SemanticVersionModel
+                    from l in SemanticVersion
                     from r in Comparator.AtLeastOnce()
                     select SemverSharp.SemanticVersion.GetComparator(l, r);                    
             }

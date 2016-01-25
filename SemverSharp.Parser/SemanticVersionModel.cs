@@ -17,6 +17,7 @@ namespace SemverSharp
         public PreRelease PreRelease { get; set; } = null;
         public IEnumerable<string> Build { get; set; } = null;
 
+        #region Constructors
         public SemanticVersion(int? major, int? minor = null, int? patch = null, string prerelease = "", string build = "")
         {
             if (!major.HasValue && minor.HasValue) throw new ArgumentNullException("Major component cannot be null if minor is non-null.");
@@ -92,6 +93,10 @@ namespace SemverSharp
             }
 
         }
+        
+        public SemanticVersion(string v) : this(Grammar.SemanticVersionIdentifier.Parse(v)) { }
+
+        #endregion
 
         public static int CompareComponent(string a, string b, bool lower = false)
         {
