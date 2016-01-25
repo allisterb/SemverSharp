@@ -309,14 +309,14 @@ namespace SemverSharp
             ConstantExpression r_major = Expression.Constant(right.Major, typeof(int));
             ConstantExpression r_minor = right.Minor.HasValue ? Expression.Constant(right.Minor, typeof(int)) : null;
             ConstantExpression r_patch = right.Patch.HasValue ? Expression.Constant(right.Patch, typeof(int)) : null;
-            ConstantExpression r_prerelease = right.PreRelease != null ? Expression.Constant(right.PreRelease, typeof(PreRelease)) : null;
+            ConstantExpression r_prerelease = Expression.Constant(right.PreRelease, typeof(PreRelease));
 
             if (et == ExpressionType.Equal || et == ExpressionType.NotEqual)
             {
                 BinaryExpression a = Expression.MakeBinary(et, l_major, r_major);
                 BinaryExpression b = right.Minor.HasValue ? Expression.MakeBinary(et, l_minor, r_minor) : null;
                 BinaryExpression c = right.Patch.HasValue ? Expression.MakeBinary(et, l_patch, r_patch) : null;
-                BinaryExpression d = (right.PreRelease != null) ? Expression.MakeBinary(et, l_prerelease, r_prerelease) : null;
+                BinaryExpression d = Expression.MakeBinary(et, l_prerelease, r_prerelease);
                 if (!right.Minor.HasValue)
                 {
                     return a;
@@ -330,7 +330,7 @@ namespace SemverSharp
                 {
                     return Expression.AndAlso(a, Expression.AndAlso(b, c));
                 }
-                else//both pre-PreRelease not null
+                else//one pre-PreRelease not null
                 {
                     return Expression.AndAlso(Expression.AndAlso(a, Expression.AndAlso(b, c)), d);
                 }
@@ -340,7 +340,7 @@ namespace SemverSharp
                 BinaryExpression a = Expression.MakeBinary(et, l_major, r_major);
                 BinaryExpression b = right.Minor.HasValue ? Expression.MakeBinary(et, l_minor, r_minor) : null;
                 BinaryExpression c = right.Patch.HasValue ? Expression.MakeBinary(et, l_patch, r_patch) : null;
-                BinaryExpression d = right.PreRelease != null ? Expression.MakeBinary(et, l_prerelease, r_prerelease) : null;
+                BinaryExpression d = Expression.MakeBinary(et, l_prerelease, r_prerelease);
 
                 if (!right.Minor.HasValue) //Major only
                 {
@@ -351,7 +351,8 @@ namespace SemverSharp
                     return Expression.OrElse(a,
                         Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b));
                 }
-
+                
+                /*
                 else if (right.PreRelease == null) //Major + minor + patch
                 {
                     return Expression.OrElse(a,
@@ -359,25 +360,22 @@ namespace SemverSharp
                                 Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), c)
                             ));
                 }
-
+                */
                 //                left.Major > right.Major ||
                 //                    (left.Major == right.Major) && (left.Minor > right.Minor) ||
                 //                    (left.Major == right.Major) && (left.Minor == right.Minor) && (left.Patch > right.Patch);
-                else //Major + minor + patch + prelease not null
-                {
-
+                else //Major + minor + patch + prerelease
+                {                    
                     return Expression.OrElse(
-                        (Expression.OrElse(a,
-                           Expression.OrElse(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b),
-                               Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), c)
-                            ))), 
-                        Expression.AndAlso(Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), 
-                           Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), Expression.MakeBinary(ExpressionType.Equal, l_patch, r_patch)), d));                    
+                     (Expression.OrElse(a,
+                        Expression.OrElse(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b),
+                            Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), c)
+                         ))),
+                     Expression.AndAlso(Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major),
+                        Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), Expression.MakeBinary(ExpressionType.Equal, l_patch, r_patch)), d));
                 }
-
-
             }
-
+            
             else if (et == ExpressionType.LessThanOrEqual)
             {
                 return Expression.OrElse(GetComparator(ExpressionType.LessThan, left, right), GetComparator(ExpressionType.Equal, left, right));

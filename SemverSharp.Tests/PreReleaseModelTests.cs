@@ -50,12 +50,14 @@ namespace SemverSharp.Tests
         [Fact]
         public void CanCompareLessThan()
         {
-            SemanticVersion v1 = new SemanticVersion(1, 0, 0, "alpha.1");
+            SemanticVersion v100a = new SemanticVersion(1, 0, 0, "alpha");
+            SemanticVersion v100a1 = new SemanticVersion(1, 0, 0, "alpha.1");
             SemanticVersion v2 = new SemanticVersion(1, 3, 4, "alpha.2.0");
             SemanticVersion v3 = new SemanticVersion(0, 0, 0, "beta.0");
             SemanticVersion v4 = new SemanticVersion(0, 0, 0, "beta.x.0");
             SemanticVersion v5 = new SemanticVersion(0, 0, 0, "beta");
-            Assert.True(v1.PreRelease < v2.PreRelease);
+            Assert.False(v100a1.PreRelease < v100a.PreRelease);
+            Assert.True(v100a1.PreRelease < v2.PreRelease);
             Assert.True(v2.PreRelease < v3.PreRelease);
             Assert.True(v3.PreRelease < v4.PreRelease);
             Assert.True(v5.PreRelease < v4.PreRelease && v4.PreRelease > v3.PreRelease);

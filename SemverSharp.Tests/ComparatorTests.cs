@@ -18,6 +18,7 @@ namespace SemverSharp.Tests
         SemanticVersion v11 = new SemanticVersion(1, 1);
         SemanticVersion v2 = new SemanticVersion(2);
         SemanticVersion v202 = new SemanticVersion(2, 0, 2);
+        SemanticVersion v202a = new SemanticVersion(2, 0, 2, "alpha");
         SemanticVersion v000a1 = new SemanticVersion(0, 0, 0, "alpha.1");
         SemanticVersion v000b1 = new SemanticVersion(0, 0, 0, "beta.1");
         SemanticVersion v000a2 = new SemanticVersion(0, 0, 0, "alpha.2");
@@ -52,11 +53,12 @@ namespace SemverSharp.Tests
 
             BinaryExpression e = SemanticVersion.GetComparator(ExpressionType.LessThan, v1, v2);
             Assert.NotNull(e);          
-            BinaryExpression e2 = SemanticVersion.GetComparator(ExpressionType.LessThan, v090a1, v000a2);            
+            BinaryExpression e2 = SemanticVersion.GetComparator(ExpressionType.LessThan, v000a2, v090a1);            
             Assert.True(SemanticVersion.InvokeComparator(e2));                        
             e2 = SemanticVersion.GetComparator(ExpressionType.LessThan, v000a1, v010a1);
             Assert.True(SemanticVersion.InvokeComparator(e2)); //should not compare on prerelease            
             e2 = SemanticVersion.GetComparator(ExpressionType.LessThan, v000a1, v010a1);
+            Assert.True(SemanticVersion.InvokeComparator(SemanticVersion.GetComparator(ExpressionType.LessThan, v202a, v202)));
             Assert.True(SemanticVersion.InvokeComparator(e2));
             Assert.True(SemanticVersion.InvokeComparator(SemanticVersion.GetComparator(ExpressionType.LessThan, v090a1, v090b2)));            
             Assert.False(SemanticVersion.InvokeComparator(SemanticVersion.GetComparator(ExpressionType.LessThan, v000a1, v000a0)));
@@ -72,8 +74,7 @@ namespace SemverSharp.Tests
             Assert.NotNull(e);
             Assert.True(SemanticVersion.InvokeComparator(e));
             BinaryExpression e2 = SemanticVersion.GetComparator(ExpressionType.LessThanOrEqual, v000a2, v090a1);            
-            Assert.True(SemanticVersion.InvokeComparator(e2));
-            ;
+            Assert.True(SemanticVersion.InvokeComparator(e2));            
             e2 = SemanticVersion.GetComparator(ExpressionType.LessThanOrEqual, v000a1, v010a1);
             Assert.True(SemanticVersion.InvokeComparator(e2)); //should compare on prerelease
             e2 = SemanticVersion.GetComparator(ExpressionType.LessThanOrEqual, v000a1, v010a1);
