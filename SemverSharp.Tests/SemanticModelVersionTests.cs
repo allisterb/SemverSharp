@@ -26,6 +26,11 @@ namespace SemverSharp.Tests
             Assert.Equal(v026a.Minor, 2);
             Assert.Equal(v026a.Patch, 6);
             Assert.Equal(v026a.PreRelease.ToString(), "alpha");
+            SemanticVersion v1001b3 = new SemanticVersion("10.0.1-beta.3");
+            Assert.Equal(v1001b3.Major, 10);
+            Assert.Equal(v1001b3.Minor, 0);
+            Assert.Equal(v1001b3.Patch, 1);
+            Assert.Equal(v1001b3.PreRelease.ToString(), "beta.3");
 
         }
 

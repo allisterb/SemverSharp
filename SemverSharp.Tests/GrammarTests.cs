@@ -16,7 +16,10 @@ namespace SemverSharp.Tests
         [Fact]
         public void CanParseDigits()
         {
-            Assert.True(Grammar.Digits.Parse("44") == "44");
+            Assert.Equal(Grammar.Digits.Parse("1"), "1");
+            Assert.Equal(Grammar.Digits.Parse("01"), "01");
+            Assert.Equal(Grammar.Digits.Parse("1004"), "1004");
+            Assert.Equal(Grammar.Digits.Parse("44"), "44");
             Assert.Throws<ParseException>(() => Grammar.Digits.Parse("d44"));
         }
 

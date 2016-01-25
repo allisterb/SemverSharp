@@ -39,11 +39,7 @@ namespace SemverSharp
         {
             get
             {
-                return 
-                    PositiveDigit.AtLeastOnce().Text()
-                    .Or(PositiveDigit.Once().Text())
-                    .Or(Parse.Char('0').Once().Text())
-                    .Token();
+                return Digits;                    
             }
         }
 
@@ -51,7 +47,7 @@ namespace SemverSharp
         {
             get
             {
-                return NumericIdentifier.Named("major");
+                return NumericIdentifier;
             }
         }
 
@@ -62,7 +58,7 @@ namespace SemverSharp
 
                 return
                     from dot in Parse.Char('.')
-                    from m in NumericIdentifier.Named("minor")
+                    from m in NumericIdentifier
                     select m;
             }
         }
@@ -74,7 +70,7 @@ namespace SemverSharp
 
                 return
                     from dot in Parse.Char('.')
-                    from m in NumericIdentifier.Named("patch")
+                    from m in NumericIdentifier
                     select m;
             }
         }
@@ -192,7 +188,7 @@ namespace SemverSharp
             get
             {
                 return
-                    Major
+                    Major                    
                     .Then(major => (Minor.XOr(Parse.Return(string.Empty)))
                     .Select(minor => major + "|" + minor))
                     .Then(minor => (Patch.XOr(Parse.Return(string.Empty)))
