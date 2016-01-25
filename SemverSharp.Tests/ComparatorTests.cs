@@ -33,15 +33,15 @@ namespace SemverSharp.Tests
         [Fact]
         public void CanParseLessThan ()
         {
-            Tuple<ExpressionType, SemanticVersion> c = Grammar.Comparator.Parse("<1.5.4");
+            Tuple<ExpressionType, SemanticVersion> c = Grammar.RangeExpression.Parse("<1.5.4");
             Assert.Equal(c.Item1, ExpressionType.LessThan);
             Assert.Equal(c.Item2.Major, 1);
             Assert.Equal(c.Item2.Minor, 5);
-            c = Grammar.Comparator.Parse("<1.0");
+            c = Grammar.RangeExpression.Parse("<1.0");
             Assert.Equal(c.Item1, ExpressionType.LessThan);
             Assert.Equal(c.Item2.Major, 1);
             Assert.Equal(c.Item2.Minor, 0);
-            c = Grammar.Comparator.Parse("<1.0.0-alpha.1.0");
+            c = Grammar.RangeExpression.Parse("<1.0.0-alpha.1.0");
             Assert.Equal(c.Item1, ExpressionType.LessThan);
             Assert.Equal(c.Item2.Major, 1);
             Assert.Equal(c.Item2.Minor, 0);
@@ -92,14 +92,14 @@ namespace SemverSharp.Tests
             Assert.False(SemanticVersion.RangeIntersect(ExpressionType.GreaterThan, v11, ExpressionType.GreaterThan, v11));
             Assert.False(SemanticVersion.RangeIntersect(ExpressionType.LessThan, v090b1, ExpressionType.GreaterThan, v11));
             Assert.True(SemanticVersion.RangeIntersect(ExpressionType.LessThan, v010a1, ExpressionType.GreaterThan, v090a2));
-            Assert.True(SemanticVersion.RangeIntersect(ExpressionType.GreaterThan, v202a, ExpressionType.LessThan, v310ab));
+            Assert.True(SemanticVersion.RangeIntersect(ExpressionType.GreaterThan, v202a, ExpressionType.LessThan, v310ab));            
         }
 
 
         [Fact]
         public void CanParseTilde()
         {
-            Tuple<ExpressionType, SemanticVersion> c = Grammar.Comparator.Parse("~1.5.4");
+            Tuple<ExpressionType, SemanticVersion> c = Grammar.RangeExpression.Parse("~1.5.4");
             Assert.Equal(c.Item1, ExpressionType.OnesComplement);
             //Assert.Equal(Grammar.Comparator.Parse("<=1.5.4").Item1, ExpressionType.LessThanOrEqual);
         }

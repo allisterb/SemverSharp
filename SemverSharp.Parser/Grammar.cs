@@ -286,7 +286,7 @@ namespace SemverSharp
         }
 
 
-        public static Parser<Tuple<ExpressionType, SemanticVersion>> Comparator
+        public static Parser<Tuple<ExpressionType, SemanticVersion>> RangeExpression
         {
             get
             {
@@ -302,7 +302,7 @@ namespace SemverSharp
             {
                 return
                     from l in SemanticVersion
-                    from r in Comparator.AtLeastOnce()
+                    from r in RangeExpression.AtLeastOnce()
                     select SemverSharp.SemanticVersion.GetComparator(l, r);                    
             }
         }

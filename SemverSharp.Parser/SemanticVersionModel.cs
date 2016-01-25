@@ -468,5 +468,12 @@ namespace SemverSharp
 
         }
 
+        public static bool RangeIntersect(string left, string right)
+        {
+            Tuple<ExpressionType, SemanticVersion> l = Grammar.RangeExpression.Parse(left);
+            Tuple<ExpressionType, SemanticVersion> r = Grammar.RangeExpression.Parse(right);
+            return RangeIntersect(l.Item1, l.Item2, r.Item1, r.Item2);
+        }
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -98,6 +99,26 @@ namespace SemverSharp.Tests
         {
             var v = Grammar.SemanticVersionIdentifier.Parse("0.0.1+build.12");
             Assert.NotEmpty(v);
+        }
+
+        [Fact]
+        public void CanParseRangeExpression()
+        {
+            Tuple<ExpressionType, SemanticVersion> re = Grammar.RangeExpression.Parse("<10.3.4");
+            Assert.Equal(ExpressionType.LessThan, re.Item1);
+            Assert.Equal(10, re.Item2.Major);
+            Assert.Equal(3, re.Item2.Minor);
+            Assert.Equal(4, re.Item2.Patch);
+            re = Grammar.RangeExpression.Parse("<=0.0.4-alpha");
+            Assert.Equal(ExpressionType.LessThanOrEqual, re.Item1);
+            Assert.Equal(0, re.Item2.Major);
+            Assert.Equal(4, re.Item2.Patch);
+            Assert.Equal("alpha", re.Item2.PreRelease.ToString());
+            re = Grammar.RangeExpression.Parse(">10.0.100-beta.0");
+            Assert.Equal(ExpressionType.GreaterThan, re.Item1);
+            Assert.Equal(10, re.Item2.Major);
+            Assert.Equal(100, re.Item2.Patch);
+            Assert.Equal("beta.0", re.Item2.PreRelease.ToString());
         }
 
 
