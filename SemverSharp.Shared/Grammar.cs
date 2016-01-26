@@ -292,7 +292,8 @@ namespace SemverSharp
             {
                 return VersionOperator.Then(o =>
                     SemanticVersion.Select(version
-                    => new Tuple<ExpressionType, SemanticVersion>(o, version)));                                                            
+                    => new Tuple<ExpressionType, SemanticVersion>(o, version)))
+                    .Or(SemanticVersion.Select(s => new Tuple<ExpressionType, SemanticVersion>(ExpressionType.Equal, s)));                                                            
             }
         }
 

@@ -441,8 +441,18 @@ namespace SemverSharp
         public static bool RangeIntersect(ExpressionType left_operator, SemanticVersion left, ExpressionType right_operator, SemanticVersion right)
         {
             if (left_operator != ExpressionType.LessThan && left_operator != ExpressionType.LessThanOrEqual &&
-                    left_operator != ExpressionType.GreaterThan && left_operator != ExpressionType.GreaterThanOrEqual)
+                    left_operator != ExpressionType.GreaterThan && left_operator != ExpressionType.GreaterThanOrEqual
+                    && left_operator != ExpressionType.Equal)
                 throw new ArgumentException("Unsupported left operator expression type " + left_operator.ToString() + ".");
+            if (left_operator == ExpressionType.Equal)
+            {
+                return InvokeComparator(GetComparator(right_operator, left, right));
+            }
+            else if (right_operator == ExpressionType.Equal)
+            {
+                return InvokeComparator(GetComparator(left_operator, left, right));
+            }
+
             if ((left_operator == ExpressionType.LessThan || left_operator == ExpressionType.LessThanOrEqual)
                 && (right_operator == ExpressionType.LessThan || right_operator == ExpressionType.LessThanOrEqual))
             {

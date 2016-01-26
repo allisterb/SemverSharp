@@ -119,6 +119,11 @@ namespace SemverSharp.Tests
             Assert.Equal(10, re.Item2.Major);
             Assert.Equal(100, re.Item2.Patch);
             Assert.Equal("beta.0", re.Item2.PreRelease.ToString());
+            re = Grammar.RangeExpression.Parse("10.6");
+            Assert.Equal(ExpressionType.Equal, re.Item1);
+            Assert.Equal(10, re.Item2.Major);
+            Assert.Equal(6, re.Item2.Minor);
+            Assert.Equal(null, re.Item2.PreRelease);
         }
 
 
