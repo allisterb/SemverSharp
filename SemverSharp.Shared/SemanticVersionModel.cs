@@ -450,7 +450,7 @@ namespace SemverSharp
             }
             else if (right_operator == ExpressionType.Equal)
             {
-                return InvokeComparator(GetComparator(left_operator, left, right));
+                return InvokeComparator(GetComparator(left_operator, right, left));
             }
 
             if ((left_operator == ExpressionType.LessThan || left_operator == ExpressionType.LessThanOrEqual)
