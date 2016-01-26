@@ -89,7 +89,7 @@ namespace SemverSharp.Tests
         {           
             Assert.True(SemanticVersion.RangeIntersect(ExpressionType.LessThan, v1, ExpressionType.LessThan, v11));
             Assert.False(SemanticVersion.RangeIntersect(ExpressionType.LessThan, v1, ExpressionType.GreaterThan, v11));
-            Assert.False(SemanticVersion.RangeIntersect(ExpressionType.GreaterThan, v11, ExpressionType.GreaterThan, v11));
+            Assert.True(SemanticVersion.RangeIntersect(ExpressionType.GreaterThan, v11, ExpressionType.GreaterThan, v11));
             Assert.False(SemanticVersion.RangeIntersect(ExpressionType.LessThan, v090b1, ExpressionType.GreaterThan, v11));
             Assert.True(SemanticVersion.RangeIntersect(ExpressionType.LessThan, v010a1, ExpressionType.GreaterThan, v090a2));
             Assert.True(SemanticVersion.RangeIntersect(ExpressionType.GreaterThan, v202a, ExpressionType.LessThan, v310ab));            

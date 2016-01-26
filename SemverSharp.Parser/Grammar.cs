@@ -229,7 +229,7 @@ namespace SemverSharp
         {
             get
             {
-                return Parse.String("<").Token().Return(ExpressionType.LessThan);
+                return Parse.String("<").Once().Token().Return(ExpressionType.LessThan);
             }
         }
 
@@ -238,7 +238,7 @@ namespace SemverSharp
             get
             {
 
-                return Parse.String("<=").Token().Return(ExpressionType.LessThanOrEqual);
+                return Parse.String("<=").Once().Token().Return(ExpressionType.LessThanOrEqual);
             }
         }
 
@@ -246,7 +246,7 @@ namespace SemverSharp
         {
             get
             {
-                return Parse.String(">").Token().Return(ExpressionType.GreaterThan);
+                return Parse.String(">").Once().Token().Return(ExpressionType.GreaterThan);
             }
         }
 
@@ -255,7 +255,7 @@ namespace SemverSharp
             get
             {
 
-                return Parse.String(">=").Token().Return(ExpressionType.GreaterThanOrEqual);
+                return Parse.String(">=").Once().Token().Return(ExpressionType.GreaterThanOrEqual);
             }
         }
 
@@ -264,7 +264,7 @@ namespace SemverSharp
             get
             {
 
-                return Parse.String("=").Token().Return(ExpressionType.LessThanOrEqual);
+                return Parse.String("=").Once().Token().Return(ExpressionType.LessThanOrEqual);
             }
         }
 
@@ -281,7 +281,7 @@ namespace SemverSharp
         {
             get
             {
-                return LessThanOrEqual.Or(LessThan).Or(GreaterThan).Or(GreaterThanOrEqual).Or(Equal).Or(Tilde);
+                return LessThanOrEqual.Or(GreaterThanOrEqual).Or(LessThan).Or(GreaterThan).Or(Equal).Or(Tilde);
             }
         }
 

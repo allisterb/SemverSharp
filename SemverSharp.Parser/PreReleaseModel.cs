@@ -10,6 +10,7 @@ namespace SemverSharp
     {
         public override bool Equals(object obj)
         {
+
             if (ReferenceEquals(obj, null))
                 return false;
 
@@ -26,6 +27,24 @@ namespace SemverSharp
             {
                 return this.ToString().GetHashCode();
             }
+        }
+
+        public static bool operator  == (PreRelease left, PreRelease right)
+        {
+            if (ReferenceEquals(left, null) && ReferenceEquals(left, null)) 
+                return true;
+            else if (ReferenceEquals(right, null) && !ReferenceEquals(left, null) && left.Count == 0)
+                return true;
+            else return ComparePreRelease(left, right) == 0;
+        }
+
+        public static bool operator != (PreRelease left, PreRelease right)
+        {
+            if (ReferenceEquals(left, null) && ReferenceEquals(left, null))
+                return false;
+            if (ReferenceEquals(right, null) && !ReferenceEquals(left, null) && left.Count == 0)
+                return false;
+            else return ComparePreRelease(left, right) != 0;
         }
 
         public static bool operator < (PreRelease left, PreRelease right)

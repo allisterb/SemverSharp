@@ -115,5 +115,17 @@ namespace SemverSharp.Tests
             Assert.Equal((--v000a1).ToString(), "0.0.0.alpha");
             Assert.Equal((--v090b2).ToString(), "0.9.0.beta.1");
         }
+
+        [Fact]
+        public void CanRangeIntersect()
+        {
+            Assert.True(SemanticVersion.RangeIntersect("<10.3.2.alpha.1", "<11.0"));
+            Assert.True(SemanticVersion.RangeIntersect("<10.3.2.alpha.1", ">1.3"));
+            Assert.True(SemanticVersion.RangeIntersect(">=1.2.2", ">1.2.0-alpha.0"));
+            Assert.False(SemanticVersion.RangeIntersect(">=1.2.0-alpha.0", "<1.2.0-alpha.0"));
+            Assert.True(SemanticVersion.RangeIntersect(">=1.2.0-alpha.0", "<=1.2.0-alpha.0"));
+            Assert.True(SemanticVersion.RangeIntersect(">1.4.0-alpha.0", "<=1.7.0"));
+        }
+
     }
 }

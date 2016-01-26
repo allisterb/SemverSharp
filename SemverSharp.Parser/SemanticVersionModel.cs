@@ -167,12 +167,12 @@ namespace SemverSharp
              
         public static bool operator <=(SemanticVersion left, SemanticVersion right)
         {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.LessThanOrEqual, right, left)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.LessThanOrEqual, left, right)).Compile().Invoke();
         }
 
         public static bool operator >=(SemanticVersion left, SemanticVersion right)
         {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.GreaterThanOrEqual, right, left)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.GreaterThanOrEqual, left, right)).Compile().Invoke();
         }
 
         public static SemanticVersion operator ++(SemanticVersion s)
@@ -308,20 +308,22 @@ namespace SemverSharp
             ConstantExpression l = Expression.Constant(left, typeof(SemanticVersion));
             ConstantExpression r = Expression.Constant(right, typeof(SemanticVersion));
             ConstantExpression l_major = Expression.Constant(left.Major, typeof(int));
-            ConstantExpression l_minor = Expression.Constant(left.Minor, typeof(int));
-            ConstantExpression l_patch = Expression.Constant(left.Patch, typeof(int));
+            ConstantExpression l_minor = left.Minor.HasValue ? Expression.Constant(left.Minor, typeof(int)) : Expression.Constant(0, typeof(int));
+            ConstantExpression l_patch = right.Patch.HasValue ? Expression.Constant(left.Patch, typeof(int)) : Expression.Constant(0, typeof(int));
             ConstantExpression l_prerelease = Expression.Constant(left.PreRelease, typeof(PreRelease));
             ConstantExpression r_major = Expression.Constant(right.Major, typeof(int));
-            ConstantExpression r_minor = right.Minor.HasValue ? Expression.Constant(right.Minor, typeof(int)) : null;
-            ConstantExpression r_patch = right.Patch.HasValue ? Expression.Constant(right.Patch, typeof(int)) : null;
+            ConstantExpression r_minor = right.Minor.HasValue ? Expression.Constant(right.Minor, typeof(int)) : Expression.Constant(0, typeof(int));
+            ConstantExpression r_patch = right.Patch.HasValue ? Expression.Constant(right.Patch, typeof(int)) : Expression.Constant(0, typeof(int));
             ConstantExpression r_prerelease = Expression.Constant(right.PreRelease, typeof(PreRelease));
 
             if (et == ExpressionType.Equal || et == ExpressionType.NotEqual)
             {
                 BinaryExpression a = Expression.MakeBinary(et, l_major, r_major);
-                BinaryExpression b = right.Minor.HasValue ? Expression.MakeBinary(et, l_minor, r_minor) : null;
-                BinaryExpression c = right.Patch.HasValue ? Expression.MakeBinary(et, l_patch, r_patch) : null;
+                BinaryExpression b = Expression.MakeBinary(et, l_minor, r_minor);
+                BinaryExpression c = Expression.MakeBinary(et, l_patch, r_patch);
                 BinaryExpression d = Expression.MakeBinary(et, l_prerelease, r_prerelease);
+                return Expression.AndAlso(Expression.AndAlso(a, Expression.AndAlso(b, c)), d);
+                /*
                 if (!right.Minor.HasValue)
                 {
                     return a;
@@ -339,6 +341,7 @@ namespace SemverSharp
                 {
                     return Expression.AndAlso(Expression.AndAlso(a, Expression.AndAlso(b, c)), d);
                 }
+                */
             }
             else if (et == ExpressionType.LessThan || et == ExpressionType.GreaterThan)
             {
@@ -437,8 +440,43 @@ namespace SemverSharp
 
         public static bool RangeIntersect(ExpressionType left_operator, SemanticVersion left, ExpressionType right_operator, SemanticVersion right)
         {
-            SemanticVersion e1 = null, e2 = null;
-            ExpressionType op;
+            if (left_operator != ExpressionType.LessThan && left_operator != ExpressionType.LessThanOrEqual &&
+                    left_operator != ExpressionType.GreaterThan && left_operator != ExpressionType.GreaterThanOrEqual)
+                throw new ArgumentException("Unsupported left operator expression type " + left_operator.ToString() + ".");
+            if ((left_operator == ExpressionType.LessThan || left_operator == ExpressionType.LessThanOrEqual)
+                && (right_operator == ExpressionType.LessThan || right_operator == ExpressionType.LessThanOrEqual))
+            {
+                return true;
+            }
+            else if ((left_operator == ExpressionType.GreaterThan || left_operator == ExpressionType.GreaterThanOrEqual)
+                && (right_operator == ExpressionType.GreaterThan || right_operator == ExpressionType.GreaterThanOrEqual))
+            {
+                return true;
+            }
+
+            else if ((left_operator == ExpressionType.LessThanOrEqual) && (right_operator == ExpressionType.GreaterThanOrEqual))
+            {
+                return right <= left;
+            }
+
+            else if ((left_operator == ExpressionType.GreaterThanOrEqual) && (right_operator == ExpressionType.LessThanOrEqual))
+            {
+                return right >= left;
+            }
+
+
+            else if ((left_operator == ExpressionType.LessThan || left_operator == ExpressionType.LessThanOrEqual)
+                && (right_operator == ExpressionType.GreaterThan || right_operator == ExpressionType.GreaterThanOrEqual))
+            {
+                return right < left;
+            }
+
+            else
+            {
+                return right > left;
+            }
+
+            /*
             if (right < left)
             {
                 e1 = right;
@@ -463,8 +501,8 @@ namespace SemverSharp
                 e1 = ++left;
 
             }
-            else throw new ArgumentException("Unsupported left operator expression type " + left_operator.ToString() + ".");
-            return Expression.Lambda<Func<bool>>(GetComparator(op, e1, e2)).Compile().Invoke();
+            */
+            //return Expression.Lambda<Func<bool>>(GetComparator(op, e1, e2)).Compile().Invoke();
 
         }
 
