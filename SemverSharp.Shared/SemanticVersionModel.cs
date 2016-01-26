@@ -288,68 +288,28 @@ namespace SemverSharp
         {
             if (ReferenceEquals(right, null)) throw new ArgumentNullException("Right operand cannot be null.");
             if (ReferenceEquals(left, null)) throw new ArgumentNullException("Left operand cannot be null.");
-            if (!left.Minor.HasValue) //Major component only
-
-            {
-                left.Minor = 0;
-                left.Patch = 0;
-            }
-            else if (!left.Patch.HasValue) //Major + minor component only
-            {
-                left.Patch = 0;
-
-            } 
-            else if (left.PreRelease == null)
-            {
-                left.PreRelease = new PreRelease();
-            }
 
             ConstantExpression zero = Expression.Constant(0, typeof(int));
             ConstantExpression l = Expression.Constant(left, typeof(SemanticVersion));
             ConstantExpression r = Expression.Constant(right, typeof(SemanticVersion));
             ConstantExpression l_major = Expression.Constant(left.Major, typeof(int));
             ConstantExpression l_minor = left.Minor.HasValue ? Expression.Constant(left.Minor, typeof(int)) : Expression.Constant(0, typeof(int));
-            ConstantExpression l_patch = right.Patch.HasValue ? Expression.Constant(left.Patch, typeof(int)) : Expression.Constant(0, typeof(int));
-            ConstantExpression l_prerelease = Expression.Constant(left.PreRelease, typeof(PreRelease));
+            ConstantExpression l_patch = left.Patch.HasValue ? Expression.Constant(left.Patch, typeof(int)) : Expression.Constant(0, typeof(int));
+            ConstantExpression l_prerelease = left.PreRelease != null ? Expression.Constant(left.PreRelease, typeof(PreRelease)) : Expression.Constant(new PreRelease(), typeof(PreRelease));
             ConstantExpression r_major = Expression.Constant(right.Major, typeof(int));
-            ConstantExpression r_minor = right.Minor.HasValue ? Expression.Constant(right.Minor, typeof(int)) : Expression.Constant(0, typeof(int));
-            ConstantExpression r_patch = right.Patch.HasValue ? Expression.Constant(right.Patch, typeof(int)) : Expression.Constant(0, typeof(int));
+            ConstantExpression r_minor = right.Minor.HasValue ? Expression.Constant(right.Minor, typeof(int)) : zero;
+            ConstantExpression r_patch = right.Patch.HasValue ? Expression.Constant(right.Patch, typeof(int)) : zero;
             ConstantExpression r_prerelease = Expression.Constant(right.PreRelease, typeof(PreRelease));
-
+            BinaryExpression a = Expression.MakeBinary(et, l_major, r_major);
+            BinaryExpression b = Expression.MakeBinary(et, l_minor, r_minor);
+            BinaryExpression c = Expression.MakeBinary(et, l_patch, r_patch);
+            BinaryExpression d = Expression.MakeBinary(et, l_prerelease, r_prerelease);
             if (et == ExpressionType.Equal || et == ExpressionType.NotEqual)
             {
-                BinaryExpression a = Expression.MakeBinary(et, l_major, r_major);
-                BinaryExpression b = Expression.MakeBinary(et, l_minor, r_minor);
-                BinaryExpression c = Expression.MakeBinary(et, l_patch, r_patch);
-                BinaryExpression d = Expression.MakeBinary(et, l_prerelease, r_prerelease);
                 return Expression.AndAlso(Expression.AndAlso(a, Expression.AndAlso(b, c)), d);
-                /*
-                if (!right.Minor.HasValue)
-                {
-                    return a;
-                }
-                else if (!right.Patch.HasValue)
-                {
-
-                    return Expression.AndAlso(a, b);
-                }
-                else if (right.PreRelease == null)
-                {
-                    return Expression.AndAlso(a, Expression.AndAlso(b, c));
-                }
-                else//one pre-PreRelease not null
-                {
-                    return Expression.AndAlso(Expression.AndAlso(a, Expression.AndAlso(b, c)), d);
-                }
-                */
             }
             else if (et == ExpressionType.LessThan || et == ExpressionType.GreaterThan)
             {
-                BinaryExpression a = Expression.MakeBinary(et, l_major, r_major);
-                BinaryExpression b = right.Minor.HasValue ? Expression.MakeBinary(et, l_minor, r_minor) : null;
-                BinaryExpression c = right.Patch.HasValue ? Expression.MakeBinary(et, l_patch, r_patch) : null;
-                BinaryExpression d = Expression.MakeBinary(et, l_prerelease, r_prerelease);
-
                 if (!right.Minor.HasValue) //Major only
                 {
                     return a;
@@ -360,27 +320,21 @@ namespace SemverSharp
                         Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b));
                 }
                 
-                /*
-                else if (right.PreRelease == null) //Major + minor + patch
+                else if (right.PreRelease == null && left.PreRelease == null) //Major + minor + patch only
                 {
                     return Expression.OrElse(a,
                             Expression.OrElse(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b),
                                 Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), c)
                             ));
                 }
-                */
                 //                left.Major > right.Major ||
                 //                    (left.Major == right.Major) && (left.Minor > right.Minor) ||
                 //                    (left.Major == right.Major) && (left.Minor == right.Minor) && (left.Patch > right.Patch);
+
                 else //Major + minor + patch + prerelease
                 {                    
-                    return Expression.OrElse(
-                     (Expression.OrElse(a,
-                        Expression.OrElse(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b),
-                            Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), c)
-                         ))),
-                     Expression.AndAlso(Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major),
-                        Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), Expression.MakeBinary(ExpressionType.Equal, l_patch, r_patch)), d));
+                    return Expression.AndAlso(Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major),
+                        Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), Expression.MakeBinary(ExpressionType.Equal, l_patch, r_patch)), d);
                 }
             }
             

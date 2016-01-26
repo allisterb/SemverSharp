@@ -10,10 +10,8 @@ namespace SemverSharp
     {
         public override bool Equals(object obj)
         {
-
             if (ReferenceEquals(obj, null))
                 return false;
-
             if (ReferenceEquals(this, obj))
                 return true;
             PreRelease other = (PreRelease)obj;
@@ -31,20 +29,12 @@ namespace SemverSharp
 
         public static bool operator  == (PreRelease left, PreRelease right)
         {
-            if (ReferenceEquals(left, null) && ReferenceEquals(left, null)) 
-                return true;
-            else if (ReferenceEquals(right, null) && !ReferenceEquals(left, null) && left.Count == 0)
-                return true;
-            else return ComparePreRelease(left, right) == 0;
+            return ComparePreRelease(left, right) == 0;
         }
 
         public static bool operator != (PreRelease left, PreRelease right)
         {
-            if (ReferenceEquals(left, null) && ReferenceEquals(left, null))
-                return false;
-            if (ReferenceEquals(right, null) && !ReferenceEquals(left, null) && left.Count == 0)
-                return false;
-            else return ComparePreRelease(left, right) != 0;
+            return ComparePreRelease(left, right) != 0;
         }
 
         public static bool operator < (PreRelease left, PreRelease right)
@@ -144,17 +134,18 @@ namespace SemverSharp
 
         public static int ComparePreRelease(PreRelease left, PreRelease right)
         {
-            if (ReferenceEquals(left, null)) throw new ArgumentNullException("Left operand can't be null.");
+            //if (ReferenceEquals(left, null)) throw new ArgumentNullException("Left operand can't be null.");
             //if (ReferenceEquals(right, null)) throw new ArgumentNullException("Right operand can't be null.");
-            if (left.Count > 0 && right == null) //null indicates SemanticVersion model mathces. No Pre-release takes precedence.
-            {
-                return -1;
-            }
-
-            else if (left.Count == 0 && right == null) //null indicates SemanticVersion model mathces. No Pre-release takes precedence.
-            {
+            if (ReferenceEquals(left, right))
                 return 0;
-            }
+            else if (ReferenceEquals(left, null) && !ReferenceEquals(right, null) && right.Count == 0)
+                return 0;
+            else if (ReferenceEquals(left, null) && !ReferenceEquals(right, null) && right.Count > 0)
+                return 1;
+            else if (ReferenceEquals(right, null) && !ReferenceEquals(left, null) && left.Count == 0)
+                return 0;
+            else if (ReferenceEquals(right, null) && !ReferenceEquals(left, null) && left.Count > 0)
+                return -1;
 
             for (int i = 0; i < Math.Min(left.Count, right.Count); i++)
             {
