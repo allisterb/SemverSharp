@@ -146,7 +146,7 @@ namespace SemverSharp
                 return 0;
             else if (ReferenceEquals(right, null) && !ReferenceEquals(left, null) && left.Count > 0)
                 return -1;
-
+            
             for (int i = 0; i < Math.Min(left.Count, right.Count); i++)
             {
                 var ac = left[i];

@@ -304,7 +304,7 @@ namespace SemverSharp
                 return
                     from l in SemanticVersion
                     from r in RangeExpression.AtLeastOnce()
-                    select SemverSharp.SemanticVersion.GetComparator(l, r);                    
+                    select SemverSharp.SemanticVersion.GetBinaryExpression(l, r);                    
             }
         }
 

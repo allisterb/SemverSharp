@@ -36,7 +36,12 @@ namespace SemverSharp
                     for (int i = 0; i < p.Count(); i++)
                     {
                         this.PreRelease.Add(i, p.ElementAt(i));
-                    }                    
+                    }
+                    int last;
+                    if (!Int32.TryParse(this.PreRelease[this.PreRelease.Count - 1], out last) || last < 0)
+                    {
+                        this.PreRelease.Add(this.PreRelease.Count, "0");
+                    }                  
                 }
                 else throw new ArgumentException("The prerelease identifier is not valid: " + prerelease + ".");
             }
@@ -145,34 +150,34 @@ namespace SemverSharp
 
         public static bool operator == (SemanticVersion left, SemanticVersion right)
         {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.Equal, left, right)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetBinaryExpression(ExpressionType.Equal, left, right)).Compile().Invoke();
         }
 
         public static bool operator !=(SemanticVersion left, SemanticVersion right)
         {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.NotEqual, left, right)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetBinaryExpression(ExpressionType.NotEqual, left, right)).Compile().Invoke();
         }
 
         public static bool operator <(SemanticVersion left, SemanticVersion right)
         {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.LessThan, left, right)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetBinaryExpression(ExpressionType.LessThan, left, right)).Compile().Invoke();
         }
        
 
         public static bool operator >(SemanticVersion left, SemanticVersion right)
         {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.GreaterThan, left, right)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetBinaryExpression(ExpressionType.GreaterThan, left, right)).Compile().Invoke();
         }
 
              
         public static bool operator <=(SemanticVersion left, SemanticVersion right)
         {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.LessThanOrEqual, left, right)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetBinaryExpression(ExpressionType.LessThanOrEqual, left, right)).Compile().Invoke();
         }
 
         public static bool operator >=(SemanticVersion left, SemanticVersion right)
         {
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.GreaterThanOrEqual, left, right)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetBinaryExpression(ExpressionType.GreaterThanOrEqual, left, right)).Compile().Invoke();
         }
 
         public static SemanticVersion operator ++(SemanticVersion s)
@@ -229,7 +234,7 @@ namespace SemverSharp
                 return false;
             if (ReferenceEquals(this, obj))
                 return true;
-            return Expression.Lambda<Func<bool>>(GetComparator(ExpressionType.Equal, (SemanticVersion)obj, this)).Compile().Invoke();
+            return Expression.Lambda<Func<bool>>(GetBinaryExpression(ExpressionType.Equal, (SemanticVersion)obj, this)).Compile().Invoke();
         }
 
         public override string ToString()
@@ -284,18 +289,17 @@ namespace SemverSharp
             }
         }
 
-        public static BinaryExpression GetComparator(ExpressionType et, SemanticVersion left, SemanticVersion right)
+        public static BinaryExpression GetBinaryExpression(ExpressionType et, SemanticVersion left, SemanticVersion right)
         {
             if (ReferenceEquals(right, null)) throw new ArgumentNullException("Right operand cannot be null.");
             if (ReferenceEquals(left, null)) throw new ArgumentNullException("Left operand cannot be null.");
-
             ConstantExpression zero = Expression.Constant(0, typeof(int));
             ConstantExpression l = Expression.Constant(left, typeof(SemanticVersion));
             ConstantExpression r = Expression.Constant(right, typeof(SemanticVersion));
             ConstantExpression l_major = Expression.Constant(left.Major, typeof(int));
             ConstantExpression l_minor = left.Minor.HasValue ? Expression.Constant(left.Minor, typeof(int)) : Expression.Constant(0, typeof(int));
             ConstantExpression l_patch = left.Patch.HasValue ? Expression.Constant(left.Patch, typeof(int)) : Expression.Constant(0, typeof(int));
-            ConstantExpression l_prerelease = left.PreRelease != null ? Expression.Constant(left.PreRelease, typeof(PreRelease)) : Expression.Constant(new PreRelease(), typeof(PreRelease));
+            ConstantExpression l_prerelease = Expression.Constant(left.PreRelease, typeof(PreRelease));
             ConstantExpression r_major = Expression.Constant(right.Major, typeof(int));
             ConstantExpression r_minor = right.Minor.HasValue ? Expression.Constant(right.Minor, typeof(int)) : zero;
             ConstantExpression r_patch = right.Patch.HasValue ? Expression.Constant(right.Patch, typeof(int)) : zero;
@@ -319,33 +323,48 @@ namespace SemverSharp
                     return Expression.OrElse(a,
                         Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b));
                 }
-                
-                else if (right.PreRelease == null && left.PreRelease == null) //Major + minor + patch only
+
+                else if (ReferenceEquals(right.PreRelease, null) && ReferenceEquals(left.PreRelease, null))//Major + minor + patch only
                 {
                     return Expression.OrElse(a,
                             Expression.OrElse(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b),
-                                Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), c)
+                                Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), 
+                                Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), c)
                             ));
+                }
+
+                else if (!ReferenceEquals(right.PreRelease, null) && !ReferenceEquals(left.PreRelease, null))//Major + minor + patch + prerelease
+                {
+                    return Expression.AndAlso(Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major),
+                        Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), Expression.MakeBinary(ExpressionType.Equal, l_patch, r_patch)), d);
+                }
+
+                else //Major + minor + patch + 1 preonly
+                {
+                    return Expression.OrElse(a,
+                            Expression.OrElse(//  or major = major and b
+                                Expression.OrElse(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), b),
+                                    Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major), 
+                                    Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), c)),         
+                                Expression.AndAlso(Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major),
+                                Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), Expression.MakeBinary(ExpressionType.Equal, l_patch, r_patch)), d))
+                        );
                 }
                 //                left.Major > right.Major ||
                 //                    (left.Major == right.Major) && (left.Minor > right.Minor) ||
                 //                    (left.Major == right.Major) && (left.Minor == right.Minor) && (left.Patch > right.Patch);
 
-                else //Major + minor + patch + prerelease
-                {                    
-                    return Expression.AndAlso(Expression.AndAlso(Expression.AndAlso(Expression.MakeBinary(ExpressionType.Equal, l_major, r_major),
-                        Expression.MakeBinary(ExpressionType.Equal, l_minor, r_minor)), Expression.MakeBinary(ExpressionType.Equal, l_patch, r_patch)), d);
-                }
+ 
             }
-            
+
             else if (et == ExpressionType.LessThanOrEqual)
             {
-                return Expression.OrElse(GetComparator(ExpressionType.LessThan, left, right), GetComparator(ExpressionType.Equal, left, right));
+                return Expression.OrElse(GetBinaryExpression(ExpressionType.LessThan, left, right), GetBinaryExpression(ExpressionType.Equal, left, right));
             }
 
             else if (et == ExpressionType.GreaterThanOrEqual)
             {
-                return Expression.OrElse(GetComparator(ExpressionType.GreaterThan, left, right), GetComparator(ExpressionType.Equal, left, right));
+                return Expression.OrElse(GetBinaryExpression(ExpressionType.GreaterThan, left, right), GetBinaryExpression(ExpressionType.Equal, left, right));
             }
 
 
@@ -358,36 +377,36 @@ namespace SemverSharp
             else throw new ArgumentException("Unimplemented expression type: " + et.ToString() + ".");
         }
 
-        public static BinaryExpression GetComparator(SemanticVersion left, IEnumerable<Tuple<ExpressionType, SemanticVersion>> right)
+        public static BinaryExpression GetBinaryExpression(SemanticVersion left, IEnumerable<Tuple<ExpressionType, SemanticVersion>> right)
         {
             BinaryExpression c = null;
             foreach (Tuple<ExpressionType, SemanticVersion> r in right)
             {
                 if (c == null)
                 {
-                    c = GetComparator(r.Item1, left, r.Item2);
+                    c = GetBinaryExpression(r.Item1, left, r.Item2);
                 }
                 else
                 {
-                    c = Expression.AndAlso(c, GetComparator(r.Item1, left, r.Item2));
+                    c = Expression.AndAlso(c, GetBinaryExpression(r.Item1, left, r.Item2));
                 }                                                                                                                                                                        
             }
             return c;
         }
 
-        public static Expression GetComparator(string et, SemanticVersion left, SemanticVersion right)
+        public static Expression GetBinaryExpression(string et, SemanticVersion left, SemanticVersion right)
         {
             switch (et)
             {
-                case "<": return GetComparator(ExpressionType.LessThan, left, right);
-                case "<=": return GetComparator(ExpressionType.LessThanOrEqual, left, right);
+                case "<": return GetBinaryExpression(ExpressionType.LessThan, left, right);
+                case "<=": return GetBinaryExpression(ExpressionType.LessThanOrEqual, left, right);
                 default: throw new ArgumentException("Unimplemented operator.");
 
             }
         }
 
 
-        public static bool InvokeComparator(BinaryExpression be)
+        public static bool InvokeBinaryExpression(BinaryExpression be)
         {
             return Expression.Lambda<Func<bool>>(be).Compile().Invoke();
         }
@@ -400,11 +419,11 @@ namespace SemverSharp
                 throw new ArgumentException("Unsupported left operator expression type " + left_operator.ToString() + ".");
             if (left_operator == ExpressionType.Equal)
             {
-                return InvokeComparator(GetComparator(right_operator, left, right));
+                return InvokeBinaryExpression(GetBinaryExpression(right_operator, left, right));
             }
             else if (right_operator == ExpressionType.Equal)
             {
-                return InvokeComparator(GetComparator(left_operator, right, left));
+                return InvokeBinaryExpression(GetBinaryExpression(left_operator, right, left));
             }
 
             if ((left_operator == ExpressionType.LessThan || left_operator == ExpressionType.LessThanOrEqual)
@@ -439,35 +458,6 @@ namespace SemverSharp
             {
                 return right > left;
             }
-
-            /*
-            if (right < left)
-            {
-                e1 = right;
-                op = left_operator;
-                e2 = left;                
-            }
-            else
-            {
-                e1 = left;
-                op = right_operator;
-                e2 = right;
-            }
-
-            if (left_operator == ExpressionType.LessThan)
-            {
-                e1 = --e1;
-            }
-
-
-            else if (left_operator == ExpressionType.GreaterThan)
-            {
-                e1 = ++left;
-
-            }
-            */
-            //return Expression.Lambda<Func<bool>>(GetComparator(op, e1, e2)).Compile().Invoke();
-
         }
 
         public static bool RangeIntersect(string left, string right)

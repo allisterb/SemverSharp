@@ -42,11 +42,15 @@ namespace SemverSharp.Tests
             SemanticVersion v3 = new SemanticVersion(3, 4);
             SemanticVersion v4 = new SemanticVersion(3, 5);
             SemanticVersion v5 = new SemanticVersion(3, 5, 0);
+            SemanticVersion v352 = new SemanticVersion(3, 5, 2);
             SemanticVersion v352a1 = new SemanticVersion(3, 5, 2, "alpha.1");
+            SemanticVersion v352a1_ = new SemanticVersion(3, 5, 2, "alpha.1.0");
             Assert.Equal(v1, v2);
             Assert.NotEqual(v2, v3);
             Assert.NotEqual(v3, v4);
             Assert.Equal(v4, v5);
+            Assert.NotEqual(v352, v352a1);
+            Assert.NotEqual(v352a1_, v352a1);
         }
 
         [Fact]
@@ -124,7 +128,7 @@ namespace SemverSharp.Tests
             Assert.True(SemanticVersion.RangeIntersect(">=1.2.2", ">1.2.0-alpha.0"));
             Assert.False(SemanticVersion.RangeIntersect(">=1.2.0-alpha.0", "<1.2.0-alpha.0"));
             Assert.True(SemanticVersion.RangeIntersect(">=1.2.0-alpha.0", "<=1.2.0-alpha.0"));
-            Assert.False(SemanticVersion.RangeIntersect(">1.4.0-alpha.0", "<=1.7.0"));
+            Assert.True(SemanticVersion.RangeIntersect(">1.4.0-alpha.0", "<=1.7.0"));
             Assert.True(SemanticVersion.RangeIntersect("1.4.0", "<=1.7.0"));
             Assert.False(SemanticVersion.RangeIntersect("10.4", "<=1.7.0.alpha.1"));
             Assert.True(SemanticVersion.RangeIntersect("1.7.0-alpha.1", "<1.7.0"));
