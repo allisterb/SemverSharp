@@ -214,8 +214,8 @@ namespace SemverSharp
                     .Select(bs => (prs + "|" + bs)))
                     .Select(v => v.Split('|').ToList());
             }
-        }
-        
+        } //<valid semver> ::= <version core> | <version core> "-" <pre-release> | <version core> "+" <build> | <version core> "-" <pre-release> "+" <build>
+
         public static Parser<SemanticVersion> SemanticVersion
         {
             get
@@ -459,6 +459,149 @@ namespace SemverSharp
             }
         }
 
-        //<valid semver> ::= <version core> | <version core> "-" <pre-release> | <version core> "+" <build> | <version core> "-" <pre-release> "+" <build>
+        public static Parser<ComparatorSet> MajorMinorPatchPreReleaseTildeRange
+        {
+            get
+            {
+                return
+                    from tilde in Parse.Char('~')
+                    from major in Major.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+                    })
+                    from minor in Minor.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    from patch in Patch.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    from prerelease in PreReleaseSuffix
+                    select new ComparatorSet
+                    {
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor, patch, prerelease)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major, minor  + 1))
+                    };
+
+            }
+        }
+
+        public static Parser<ComparatorSet> TildeRange
+        {
+            get
+            {
+                return MajorMinorPatchPreReleaseTildeRange.Or(MajorMinorPatchTildeRange).Or(MajorMinorTildeRange).Or(MajorTildeRange);
+            }
+        }
+        
+        public static Parser<ComparatorSet> MajorMinorPatchCaretRange
+        {
+            get
+            {
+                return
+                    from caret in Parse.Char('^')
+                    from major in Major.Except(Parse.Char('0')).Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+                    })
+                    from minor in Minor.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    from patch in Patch.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+
+                    select new ComparatorSet
+                    {
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor, patch)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major + 1))
+                    };
+
+            }
+        }
+
+        public static Parser<ComparatorSet> MinorPatchCaretRange
+        {
+            get
+            {
+                return
+                    from caret in Parse.Char('^')
+                    from major in Parse.Char('0').Return(0)               
+                    from minor in Minor.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    from patch in Patch.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })                    
+                    select new ComparatorSet
+                    {
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor, patch)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major, minor  + 1))
+                    };
+
+            }
+        }
+
+        public static Parser<ComparatorSet> PatchCaretRange
+        {
+            get
+            {
+                return
+                    from tilde in Parse.Char('^')
+                    from major in Parse.Char('0').Return(0)
+                    from d1 in Parse.Char('.')
+                    from minor in Parse.Char('0').Return(0)                    
+                    from patch in Patch.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })                    
+                    select new ComparatorSet
+                    {
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor, patch)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major, minor, patch + 1))
+                    };
+
+            }
+        }
+
+        public static Parser<ComparatorSet> CaretRange
+        {
+            get
+            {
+                return MajorMinorPatchCaretRange.Or(MinorPatchCaretRange).Or(PatchCaretRange);
+            }
+        }
+
+
     }
 }

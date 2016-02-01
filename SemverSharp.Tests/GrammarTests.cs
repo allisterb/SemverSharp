@@ -154,8 +154,10 @@ namespace SemverSharp.Tests
         {
             ComparatorSet tr1 = Grammar.MajorTildeRange.Parse("~4");
             ComparatorSet tr2 = Grammar.MajorTildeRange.Parse("~14.4");
+            ComparatorSet tr3 = Grammar.MajorTildeRange.Parse("~7.0.1");
             Assert.NotNull(tr1);
             Assert.NotNull(tr2);
+            Assert.NotNull(tr3);
         }
     }
 }
