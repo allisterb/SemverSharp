@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SemverSharp
 {
-    public class ComparatorSet : List<Tuple<ExpressionType, SemanticVersion>>
+    public class ComparatorSet : List<Comparator>
     {
         public ComparatorSet() : base() {}                           
     }

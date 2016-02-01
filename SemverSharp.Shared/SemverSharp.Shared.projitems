@@ -6,7 +6,7 @@
     <SharedGUID>0e5684f0-3aae-4e41-a885-f51c0528c645</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>SemverSharp.Shared</Import_RootNamespace>
+    <Import_RootNamespace>SemverSharp</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Comparator.cs" />

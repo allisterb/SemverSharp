@@ -399,7 +399,7 @@ namespace SemverSharp
             else throw new ArgumentException("Unimplemented expression type: " + et.ToString() + ".");
         }
 
-        public static BinaryExpression GetBinaryExpression(SemanticVersion left, IEnumerable<Tuple<ExpressionType, SemanticVersion>> right)
+        public static BinaryExpression GetBinaryExpression(SemanticVersion left, ComparatorSet right)
         {
             if (right.Count() == 0)
             {
@@ -408,15 +408,15 @@ namespace SemverSharp
             else
             {
                 BinaryExpression c = null;
-                foreach (Tuple<ExpressionType, SemanticVersion> r in right)
+                foreach (Comparator r in right)
                 {
                     if (c == null)
                     {
-                        c = GetBinaryExpression(r.Item1, left, r.Item2);
+                        c = GetBinaryExpression(r.Operator, left, r.Version);
                     }
                     else
                     {
-                        c = Expression.AndAlso(c, GetBinaryExpression(r.Item1, left, r.Item2));
+                        c = Expression.AndAlso(c, GetBinaryExpression(r.Operator, left, r.Version));
                     }
                 }
                 return c;
@@ -484,9 +484,9 @@ namespace SemverSharp
        
         public static bool RangeIntersect(string left, string right)
         {
-            Tuple<ExpressionType, SemanticVersion> l = Grammar.Comparator.Parse(left);
-            Tuple<ExpressionType, SemanticVersion> r = Grammar.Comparator.Parse(right);
-            return RangeIntersect(l.Item1, l.Item2, r.Item1, r.Item2);
+            Comparator l = Grammar.Comparator.Parse(left);
+            Comparator r = Grammar.Comparator.Parse(right);
+            return RangeIntersect(l.Operator, l.Version, r.Operator, r.Version);
         }
 
         public static bool Satisfies(SemanticVersion v, ComparatorSet s)

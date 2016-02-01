@@ -329,7 +329,7 @@ namespace SemverSharp
                     })
                     from dot in Parse.Char('.').Once().Text().Token()
                     from x in XIdentifier
-                    select new ComparatorSet //List<Tuple<ExpressionType, SemanticVersion>>(2)
+                    select new ComparatorSet 
                     {
                         new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major)),
                         new Comparator(ExpressionType.LessThan, new SemanticVersion(major + 1))
@@ -374,30 +374,90 @@ namespace SemverSharp
             }
         }
 
-
-        public static Func<bool> GetCompareExpression(string op, SemanticVersion l, SemanticVersion r = null)
+        public static Parser<ComparatorSet> MajorTildeRange
         {
-            ConstantExpression left = Expression.Constant(l, typeof(SemanticVersion));
-            ConstantExpression right = Expression.Constant(r, typeof(SemanticVersion));
-            switch (op)
+            get
             {
-                case "<":
-                    List<Expression> expressions = new List<Expression>();
-                    expressions.Add(Expression.MakeBinary(ExpressionType.LessThan, left, right));
-                    BlockExpression block = Expression.Block(expressions);
-                    return Expression.Lambda<Func<bool>>(Expression.Block(expressions)).Compile();
+                return
+                    from tilde in Parse.Char('~')
+                    from major in Major.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+                    })
+                    select new ComparatorSet
+                    {
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major + 1))
+                    };
 
-                default:
-                    throw new ArgumentException("Unsupported operator: " + op);
-
-                
-                    
             }
-
-
-            
         }
 
+        public static Parser<ComparatorSet> MajorMinorTildeRange
+        {
+            get
+            {
+                return
+                    from tilde in Parse.Char('~')
+                    from major in Major.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+                    })
+                    from minor in Minor.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    select new ComparatorSet
+                    {
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major, minor  + 1))
+                    };
+
+            }
+        }
+
+        public static Parser<ComparatorSet> MajorMinorPatchTildeRange
+        {
+            get
+            {
+                return
+                    from tilde in Parse.Char('~')
+                    from major in Major.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+                    })
+                    from minor in Minor.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    from patch in Patch.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+
+                    select new ComparatorSet
+                    {
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor, patch)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major, minor  + 1))
+                    };
+
+            }
+        }
 
         //<valid semver> ::= <version core> | <version core> "-" <pre-release> | <version core> "+" <build> | <version core> "-" <pre-release> "+" <build>
     }
