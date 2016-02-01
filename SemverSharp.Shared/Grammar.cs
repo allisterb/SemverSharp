@@ -286,40 +286,17 @@ namespace SemverSharp
         }
 
 
-        public static Parser<Tuple<ExpressionType, SemanticVersion>> Comparator
+        public static Parser<Comparator> Comparator
         {
             get
             {
                 return VersionOperator.Then(o =>
                     SemanticVersion.Select(version
-                    => new Tuple<ExpressionType, SemanticVersion>(o, version)))
-                    .Or(SemanticVersion.Select(s => new Tuple<ExpressionType, SemanticVersion>(ExpressionType.Equal, s)));                                                            
+                    => new Comparator(o, version)))
+                    .Or(SemanticVersion.Select(s => new Comparator(ExpressionType.Equal, s)));                                                            
             }
         }
-
-        /*
-        public static Parser<BinaryExpression> IntervalExpression
-        {
-            get
-            {
-                return RangeExpression.Then(l => RangeExpression
-                    .Select(r => SemverSharp.SemanticVersion.GetIntervalExpression(l.Item1, l.Item2, r.Item1, r.Item2)));
-            }
-        }*/
-
-        /*
-        public static Parser<Expression> ComparatorSet
-        {
-            get
-            {
-                return
-                    from l in SemanticVersion
-                    from r in Comparator.AtLeastOnce()
-                    select SemverSharp.SemanticVersion.GetBinaryExpression(l, r);                    
-            }
-        }*/
-
-        
+                
         public static Parser<string> XIdentifier
         {
             get
@@ -329,8 +306,16 @@ namespace SemverSharp
             }
         }
 
+
+        public static Parser<ComparatorSet> AllXRange
+        {
+            get
+            {
+                return XIdentifier.Return(new ComparatorSet());
+            }
+        }
         
-        public static Parser<ComparatorSet> MajorXRangeExpression
+        public static Parser<ComparatorSet> MajorXRange
         {
             get
             {
@@ -352,7 +337,7 @@ namespace SemverSharp
             }
         }
 
-        public static Parser<List<Tuple<ExpressionType, SemanticVersion>>> MajorMinorXRangeExpression
+        public static Parser<ComparatorSet> MajorMinorXRange
         {
             get
             {
@@ -363,7 +348,7 @@ namespace SemverSharp
                         Int32.TryParse(m.ToString(), out num);
                         return num;
 
-                    })
+                    })                    
                     from minor in Minor.Select(m =>
                     {
                         int num;
@@ -373,11 +358,19 @@ namespace SemverSharp
                     })
                     from dot in Parse.Char('.').Once().Text().Token()
                     from x in XIdentifier
-                    select new List<Tuple<ExpressionType, SemanticVersion>>(2)
+                    select new ComparatorSet
                     {
-                        new Tuple<ExpressionType, SemverSharp.SemanticVersion>(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor)),
-                        new Tuple<ExpressionType, SemverSharp.SemanticVersion>(ExpressionType.LessThan, new SemanticVersion(major, minor  + 1))
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major, minor  + 1))
                     };
+            }
+        }
+
+        public static Parser<ComparatorSet> XRange
+        {
+            get
+            {
+                return MajorMinorXRange.Or(MajorXRange).Or(AllXRange);
             }
         }
 

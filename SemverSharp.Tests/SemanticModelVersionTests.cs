@@ -66,13 +66,15 @@ namespace SemverSharp.Tests
             SemanticVersion v11 = new SemanticVersion(11);
             Assert.True(v009 < v1);
             Assert.True(v1 < v134);
-            Assert.True(v134 > v1);
-            //Assert.True(v5 < v3);
-            //Assert.True(v5 < v6);
-            //Assert.False(v1 < v5);
-            //Assert.False(v2 < v1);
-            //Assert.False(v3 < v2);
-
+            Assert.True(v134 < v3);
+            Assert.True(v009 < v079);
+            SemanticVersion v100a1 = new SemanticVersion(1, 0, 0, "alpha.1");
+            SemanticVersion v100a4 = new SemanticVersion(1, 0, 0, "alpha.4");
+            SemanticVersion v130b = new SemanticVersion(1, 3, 0, "beta");
+            SemanticVersion v130bx = new SemanticVersion(1, 3, 0, "beta.x");
+            Assert.True(v100a1 < v100a4); //Compare on pre-release
+            Assert.False(v100a1 < v130b); //False, pre-release doesn't match
+            Assert.True(v130b < v3); //Only one identifier has pre-release so do normal compare
         }
         
         [Fact]

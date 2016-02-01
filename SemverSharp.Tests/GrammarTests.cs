@@ -104,7 +104,7 @@ namespace SemverSharp.Tests
         [Fact]
         public void CanParseRangeExpression()
         {
-            Tuple<ExpressionType, SemanticVersion> re = Grammar.Comparator.Parse("<10.3.4");
+            Comparator re = Grammar.Comparator.Parse("<10.3.4");
             Assert.Equal(ExpressionType.LessThan, re.Item1);
             Assert.Equal(10, re.Item2.Major);
             Assert.Equal(3, re.Item2.Minor);
@@ -136,12 +136,17 @@ namespace SemverSharp.Tests
         [Fact]
         public void CanParseXRangeExpression()
         {
-            ComparatorSet xr1 = Grammar.MajorXRangeExpression.Parse("4.x");
+            ComparatorSet xr1 = Grammar.MajorXRange.Parse("4.x");
             Assert.NotNull(xr1);
             Assert.Equal(xr1[0].Item1, ExpressionType.GreaterThanOrEqual);
             Assert.Equal(xr1[0].Item2, new SemanticVersion(4));
             Assert.Equal(xr1[1].Item1, ExpressionType.LessThan);
             Assert.Equal(xr1[1].Item2, new SemanticVersion(5));
+            ComparatorSet xr2 = Grammar.MajorMinorXRange.Parse("4.3.x");
+            Assert.NotNull(xr1);
+            Assert.Equal(xr1[0].Item1, ExpressionType.GreaterThanOrEqual);
+            Assert.Throws(typeof(Sprache.ParseException), () => Grammar.MajorXRange.Parse("*"));
+            Assert.Throws(typeof(Sprache.ParseException), () => Grammar.MajorXRange.Parse("4.3.x"));
         }
     }
 }

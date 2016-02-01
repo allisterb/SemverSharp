@@ -401,19 +401,26 @@ namespace SemverSharp
 
         public static BinaryExpression GetBinaryExpression(SemanticVersion left, IEnumerable<Tuple<ExpressionType, SemanticVersion>> right)
         {
-            BinaryExpression c = null;
-            foreach (Tuple<ExpressionType, SemanticVersion> r in right)
+            if (right.Count() == 0)
             {
-                if (c == null)
-                {
-                    c = GetBinaryExpression(r.Item1, left, r.Item2);
-                }
-                else
-                {
-                    c = Expression.AndAlso(c, GetBinaryExpression(r.Item1, left, r.Item2));
-                }                                                                                                                                                                        
+                return GetBinaryExpression(ExpressionType.Equal, left, left);
             }
-            return c;
+            else
+            {
+                BinaryExpression c = null;
+                foreach (Tuple<ExpressionType, SemanticVersion> r in right)
+                {
+                    if (c == null)
+                    {
+                        c = GetBinaryExpression(r.Item1, left, r.Item2);
+                    }
+                    else
+                    {
+                        c = Expression.AndAlso(c, GetBinaryExpression(r.Item1, left, r.Item2));
+                    }
+                }
+                return c;
+            }
         }
     
         public static bool InvokeBinaryExpression(BinaryExpression be)
