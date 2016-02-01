@@ -189,11 +189,11 @@ namespace SemverSharp
             {
                 return
                     Major                    
-                    .Then(major => (Minor.XOr(Parse.Return(string.Empty)))
-                    .Select(minor => major + "|" + minor))
-                    .Then(minor => (Patch.XOr(Parse.Return(string.Empty)))
-                    .Select(patch => (minor + "|" + patch)))
-                     .Select(v => v.Split('|').ToList());
+                        .Then(major => (Minor.XOr(Parse.Return(string.Empty)))
+                        .Select(minor => major + "|" + minor))
+                        .Then(minor => (Patch.XOr(Parse.Return(string.Empty)))
+                        .Select(patch => (minor + "|" + patch)))
+                        .Select(v => v.Split('|').ToList());
             }
         }
 
@@ -286,7 +286,7 @@ namespace SemverSharp
         }
 
 
-        public static Parser<Tuple<ExpressionType, SemanticVersion>> RangeExpression
+        public static Parser<Tuple<ExpressionType, SemanticVersion>> Comparator
         {
             get
             {
@@ -297,16 +297,90 @@ namespace SemverSharp
             }
         }
 
+        /*
+        public static Parser<BinaryExpression> IntervalExpression
+        {
+            get
+            {
+                return RangeExpression.Then(l => RangeExpression
+                    .Select(r => SemverSharp.SemanticVersion.GetIntervalExpression(l.Item1, l.Item2, r.Item1, r.Item2)));
+            }
+        }*/
+
+        /*
         public static Parser<Expression> ComparatorSet
         {
             get
             {
                 return
                     from l in SemanticVersion
-                    from r in RangeExpression.AtLeastOnce()
+                    from r in Comparator.AtLeastOnce()
                     select SemverSharp.SemanticVersion.GetBinaryExpression(l, r);                    
             }
+        }*/
+
+        
+        public static Parser<string> XIdentifier
+        {
+            get
+            {
+                return
+                    Parse.Char('*').XOr(Parse.Char('x')).XOr(Parse.Char('X')).Once().Text().Token();
+            }
         }
+
+        
+        public static Parser<ComparatorSet> MajorXRangeExpression
+        {
+            get
+            {
+                return
+                    from major in Major.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    from dot in Parse.Char('.').Once().Text().Token()
+                    from x in XIdentifier
+                    select new ComparatorSet //List<Tuple<ExpressionType, SemanticVersion>>(2)
+                    {
+                        new Comparator(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major)),
+                        new Comparator(ExpressionType.LessThan, new SemanticVersion(major + 1))
+                    };                    
+            }
+        }
+
+        public static Parser<List<Tuple<ExpressionType, SemanticVersion>>> MajorMinorXRangeExpression
+        {
+            get
+            {
+                return
+                    from major in Major.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    from minor in Minor.Select(m =>
+                    {
+                        int num;
+                        Int32.TryParse(m.ToString(), out num);
+                        return num;
+
+                    })
+                    from dot in Parse.Char('.').Once().Text().Token()
+                    from x in XIdentifier
+                    select new List<Tuple<ExpressionType, SemanticVersion>>(2)
+                    {
+                        new Tuple<ExpressionType, SemverSharp.SemanticVersion>(ExpressionType.GreaterThanOrEqual, new SemanticVersion(major, minor)),
+                        new Tuple<ExpressionType, SemverSharp.SemanticVersion>(ExpressionType.LessThan, new SemanticVersion(major, minor  + 1))
+                    };
+            }
+        }
+
 
         public static Func<bool> GetCompareExpression(string op, SemanticVersion l, SemanticVersion r = null)
         {

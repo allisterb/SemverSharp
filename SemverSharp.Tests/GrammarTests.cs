@@ -104,28 +104,44 @@ namespace SemverSharp.Tests
         [Fact]
         public void CanParseRangeExpression()
         {
-            Tuple<ExpressionType, SemanticVersion> re = Grammar.RangeExpression.Parse("<10.3.4");
+            Tuple<ExpressionType, SemanticVersion> re = Grammar.Comparator.Parse("<10.3.4");
             Assert.Equal(ExpressionType.LessThan, re.Item1);
             Assert.Equal(10, re.Item2.Major);
             Assert.Equal(3, re.Item2.Minor);
             Assert.Equal(4, re.Item2.Patch);
-            re = Grammar.RangeExpression.Parse("<=0.0.4-alpha");
+            re = Grammar.Comparator.Parse("<=0.0.4-alpha");
             Assert.Equal(ExpressionType.LessThanOrEqual, re.Item1);
             Assert.Equal(0, re.Item2.Major);
             Assert.Equal(4, re.Item2.Patch);
-            Assert.Equal("alpha", re.Item2.PreRelease.ToString());
-            re = Grammar.RangeExpression.Parse(">10.0.100-beta.0");
+            Assert.Equal("alpha.0", re.Item2.PreRelease.ToString());
+            re = Grammar.Comparator.Parse(">10.0.100-beta.0");
             Assert.Equal(ExpressionType.GreaterThan, re.Item1);
             Assert.Equal(10, re.Item2.Major);
             Assert.Equal(100, re.Item2.Patch);
             Assert.Equal("beta.0", re.Item2.PreRelease.ToString());
-            re = Grammar.RangeExpression.Parse("10.6");
+            re = Grammar.Comparator.Parse("10.6");
             Assert.Equal(ExpressionType.Equal, re.Item1);
             Assert.Equal(10, re.Item2.Major);
             Assert.Equal(6, re.Item2.Minor);
             Assert.Equal(null, re.Item2.PreRelease);
         }
 
+        [Fact]
+        public void CanParseIntervalExpression()
+        {
+            //BinaryExpression be = Grammar.IntervalExpression.Parse(">=1.0.0 <2.0.0");
+            //Assert.NotNull(be);
+        }
 
+        [Fact]
+        public void CanParseXRangeExpression()
+        {
+            ComparatorSet xr1 = Grammar.MajorXRangeExpression.Parse("4.x");
+            Assert.NotNull(xr1);
+            Assert.Equal(xr1[0].Item1, ExpressionType.GreaterThanOrEqual);
+            Assert.Equal(xr1[0].Item2, new SemanticVersion(4));
+            Assert.Equal(xr1[1].Item1, ExpressionType.LessThan);
+            Assert.Equal(xr1[1].Item2, new SemanticVersion(5));
+        }
     }
 }

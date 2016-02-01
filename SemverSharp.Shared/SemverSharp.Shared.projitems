@@ -9,6 +9,8 @@
     <Import_RootNamespace>SemverSharp.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Comparator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ComparatorSet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Grammar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PreReleaseModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SemanticVersionModel.cs" />
