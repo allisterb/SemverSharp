@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SemverSharp</id>
+    <version>$version$</version>
+    <title>Semver#</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/allisterb/SemverSharp/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/allisterb/SemverSharp</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>.NET semantic version parsing and querying written in C# using the Sprache parser.</description>
+    <releaseNotes>Initial NuGet release.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>Versioning Sprache</tags>
+  </metadata>
+</package>
