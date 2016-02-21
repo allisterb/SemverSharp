@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 using Sprache;
 using Xunit;
-using SemverSharp;
 
 namespace SemverSharp.Tests
 {
@@ -63,10 +59,6 @@ namespace SemverSharp.Tests
             Assert.True(v.Count() == 3);
             v = Grammar.DotSeparatedBuildIdentifier.Parse("1.2.3.4.alpha1");
             Assert.True(v.Count() == 5);
-            //Assert.True(Grammar.IdentifierCharacters.Parse("23") == "23-");
-            //Assert.True(Grammar.IdentifierCharacters.Parse("alpha1") == "alpha1");
-            //Assert.True(Grammar.IdentifierCharacter.Parse("9") == '9');
-            //Assert.Throws<ParseException>(() => Grammar.NonDigit.Parse("."));
         }
 
         [Fact]
@@ -87,22 +79,17 @@ namespace SemverSharp.Tests
             Assert.Equal(v[0], "4");
             Assert.Equal(v[1], "");
             Assert.Equal(v[2], "");
-            //v = Grammar.VersionCore.Parse("5");
-            //Assert.True(v.Count() == 1);
-            //v = Grammar.VersionCore.Parse("0.5.4");
-            //Assert.True(v.Count() == 3);
-
         }
 
         [Fact]
-        public void CanParseVersion()
+        public void CanParseVersionIdentifier()
         {
             var v = Grammar.SemanticVersionIdentifier.Parse("0.0.1+build.12");
             Assert.NotEmpty(v);
         }
 
         [Fact]
-        public void CanParseRangeExpression()
+        public void CanParseComparator()
         {
             Comparator re = Grammar.Comparator.Parse("<10.3.4");
             Assert.Equal(ExpressionType.LessThan, re.Operator);
@@ -127,10 +114,21 @@ namespace SemverSharp.Tests
         }
 
         [Fact]
-        public void CanParseIntervalExpression()
+        public void CanParseLessThan()
         {
-            //BinaryExpression be = Grammar.IntervalExpression.Parse(">=1.0.0 <2.0.0");
-            //Assert.NotNull(be);
+            Comparator c = Grammar.Comparator.Parse("<1.5.4");
+            Assert.Equal(c.Operator, ExpressionType.LessThan);
+            Assert.Equal(c.Version.Major, 1);
+            Assert.Equal(c.Version.Minor, 5);
+            c = Grammar.Comparator.Parse("<1.0");
+            Assert.Equal(c.Operator, ExpressionType.LessThan);
+            Assert.Equal(c.Version.Major, 1);
+            Assert.Equal(c.Version.Minor, 0);
+            c = Grammar.Comparator.Parse("<1.0.0-alpha.1.0");
+            Assert.Equal(c.Operator, ExpressionType.LessThan);
+            Assert.Equal(c.Version.Major, 1);
+            Assert.Equal(c.Version.Minor, 0);
+            Assert.Equal(c.Version.PreRelease.ToString(), "alpha.1.0");
         }
 
         [Fact]

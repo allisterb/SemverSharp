@@ -9,13 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemverSharp.Tests", "Semver
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SemverSharp.CommandLine", "SemverSharp.CommandLine\SemverSharp.CommandLine.csproj", "{58301F35-A80F-48B2-B1AD-4AA40C3F2A2B}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SemverSharp.Shared", "SemverSharp.Shared\SemverSharp.Shared.shproj", "{0E5684F0-3AAE-4E41-A885-F51C0528C645}"
-EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		SemverSharp.Shared\SemverSharp.Shared.projitems*{0e5684f0-3aae-4e41-a885-f51c0528c645}*SharedItemsImports = 13
-		SemverSharp.Shared\SemverSharp.Shared.projitems*{97958544-e970-4877-af36-b4543b60415d}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

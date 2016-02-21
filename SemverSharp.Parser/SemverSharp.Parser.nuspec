@@ -13,5 +13,8 @@
     <releaseNotes>Initial NuGet release.</releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>Versioning Sprache</tags>
+    <dependencies>
+      <dependency id="Sprache" version="2.0.0.51" />
+    </dependencies>
   </metadata>
 </package>
